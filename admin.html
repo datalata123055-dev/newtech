@@ -56,13 +56,20 @@
 
     .field { text-align: left; margin-bottom: 20px; }
     .field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--primary); }
-    .field input {
+    .field input, .field select, .field textarea {
       width: 100%;
       padding: 14px 16px;
       border: 1px solid var(--line);
       border-radius: 14px;
       background: #f8fafc;
+      transition: 0.3s;
     }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none;
+      border-color: var(--secondary);
+      background: white;
+    }
+
     .btn {
       width: 100%;
       padding: 16px;
@@ -72,9 +79,14 @@
       font-size: 16px;
       cursor: pointer;
       transition: 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
     .btn-primary { background: var(--secondary); color: white; }
     .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
 
     /* Dashboard Layout */
     .app-shell { display: flex; min-height: 100vh; }
@@ -115,7 +127,6 @@
     .nav-badge { background: #ef4444; color: white; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-left: auto; }
 
     .main-content { flex: 1; padding: 30px; }
-    .top-bar { display: none; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     .header h1 { font-size: 28px; font-weight: 800; margin: 0; }
@@ -205,7 +216,7 @@
       <h2 id="modalTitle" style="margin-bottom: 20px;">Edit Record</h2>
       <form id="recordForm"></form>
       <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button type="submit" form="recordForm" class="btn btn-primary">Save Changes</button>
+        <button type="submit" form="recordForm" id="saveBtn" class="btn btn-primary">Save Changes</button>
         <button onclick="closeModal()" class="btn" style="background: #f1f5f9;">Cancel</button>
       </div>
     </div>
@@ -343,7 +354,7 @@
 
       form.onsubmit = async (e) => {
         e.preventDefault();
-        const btn = e.target.closest('.modal-card').querySelector('button[type="submit"]');
+        const btn = document.getElementById('saveBtn');
         btn.disabled = true; btn.textContent = 'Saving...';
         
         try {

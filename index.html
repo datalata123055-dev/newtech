@@ -82,6 +82,8 @@
       gap: 10px;
       box-shadow: 0 10px 20px rgba(249, 115, 22, 0.2);
       transition: 0.3s;
+      border: none;
+      cursor: pointer;
     }
     .btn-primary:hover {
       background: var(--secondary-dark);
@@ -156,6 +158,8 @@
       flex-direction: column;
       gap: 5px;
       cursor: pointer;
+      background: none;
+      border: none;
     }
     .hamburger span {
       width: 25px;
@@ -310,7 +314,7 @@
       overflow: hidden;
       height: 300px;
     }
-    .gallery-item img {
+    .gallery-item img, .gallery-item video {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -326,7 +330,7 @@
       opacity: 0;
       transition: 0.3s;
     }
-    .gallery-item:hover img { transform: scale(1.1); }
+    .gallery-item:hover img, .gallery-item:hover video { transform: scale(1.1); }
     .gallery-item:hover .gallery-overlay { opacity: 1; }
     .gallery-overlay h4 { color: white; font-size: 18px; }
 
@@ -458,7 +462,6 @@
     @media (max-width: 600px) {
       .nav-container { padding: 12px 16px; gap: 10px; }
       .logo img { height: 48px; }
-      .company-login { display: none !important; }
       .hero-content h1 { font-size: 32px; }
       .hero-stats { gap: 20px; }
       .stat-item h3 { font-size: 24px; }
@@ -491,7 +494,7 @@
         <li class="mobile-only"><a href="admin.html">Admin Login</a></li>
       </ul>
       <a href="#contact" class="nav-cta">Get Quote</a>
-      <a href="admin.html" class="company-login">Admin Login</a>
+      <a href="admin.html" class="company-login" style="margin-left: 15px; font-weight: 700; color: var(--primary);">Admin Login</a>
       <button class="hamburger" id="hamburger">
         <span></span><span></span><span></span>
       </button>
@@ -618,18 +621,7 @@
         <p style="margin: 0 auto;">See our solutions in action across residential & commercial projects.</p>
       </div>
       <div class="gallery-grid">
-        <div class="gallery-item fade-up">
-          <img src="https://image.qwenlm.ai/public_source/a9adada8-5a98-4894-9f2f-04d564115042/1504e73fe-fb25-4f06-b8f9-9b9d8e21ab60.png" alt="Installation">
-          <div class="gallery-overlay"><h4>Residential Window Screen</h4></div>
-        </div>
-        <div class="gallery-item fade-up">
-          <img src="https://image.qwenlm.ai/public_source/a9adada8-5a98-4894-9f2f-04d564115042/1abb70666-fead-49c6-8081-1ae01f011c7a.png" alt="Installation">
-          <div class="gallery-overlay"><h4>Sliding Door System</h4></div>
-        </div>
-        <div class="gallery-item fade-up">
-          <img src="https://image.qwenlm.ai/public_source/a9adada8-5a98-4894-9f2f-04d564115042/10d0ff845-07f4-46e8-b38f-ffb94cca9f65.png" alt="Installation">
-          <div class="gallery-overlay"><h4>Premium Invisible Grill</h4></div>
-        </div>
+        <!-- Gallery items will be loaded here from Firebase -->
       </div>
     </div>
   </section>
@@ -727,20 +719,20 @@
           <div class="form-row">
             <div class="field">
               <label>Your Name</label>
-              <input type="text" placeholder="Your Name" required>
+              <input type="text" name="name" placeholder="Your Name" required>
             </div>
             <div class="field">
               <label>Phone Number</label>
-              <input type="tel" placeholder="+91 XXXXX XXXXX" required>
+              <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX" required>
             </div>
           </div>
           <div class="field">
             <label>Email Address</label>
-            <input type="email" placeholder="your@email.com" required>
+            <input type="email" name="email" placeholder="your@email.com" required>
           </div>
           <div class="field">
             <label>Service Required</label>
-            <select required>
+            <select name="service" required>
               <option value="">Select a service</option>
               <option value="Pleated Mesh">Pleated Mesh</option>
               <option value="Honey Comb Partition">Honey Comb Partition</option>
@@ -751,7 +743,7 @@
           </div>
           <div class="field">
             <label>Your Message</label>
-            <textarea rows="4" placeholder="Tell us about your requirements..." required></textarea>
+            <textarea name="message" rows="4" placeholder="Tell us about your requirements..." required></textarea>
           </div>
           <button type="submit" class="btn-primary" style="width: 100%; border: none; cursor: pointer; font-size: 16px;">Send Message →</button>
         </form>
@@ -765,40 +757,10 @@
     </div>
   </footer>
 
-  <script>
-    // Scroll animations
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
-
-    // Mobile menu toggle
-    const hamburger = document.getElementById('hamburger');
-    const navLinks = document.getElementById('navLinks');
-    hamburger.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
-    });
-
-    // Navbar shadow on scroll
-    window.addEventListener('scroll', () => {
-      const nav = document.querySelector('.navbar');
-      if (window.scrollY > 50) {
-        nav.style.boxShadow = '0 4px 30px rgba(0,0,0,0.1)';
-      } else {
-        nav.style.boxShadow = '0 2px 20px rgba(0,0,0,0.06)';
-      }
-    });
-  </script>
-
   <!-- Firebase Integration -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyATvwM_0B9ibtD9MniIoiNuiirnC0mb2AY",
@@ -812,10 +774,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const analytics = getAnalytics(app);
-
-    // Global access for dynamic rendering
-    window.firebaseDB = db;
 
     // Load Gallery from Firebase
     function initGallerySync() {
@@ -887,12 +845,13 @@
       const original = btn.innerHTML;
       
       try {
+        const formData = new FormData(e.target);
         await addDoc(collection(db, "leads"), {
-          name: e.target.querySelector('input[placeholder="Your Name"]').value,
-          phone: e.target.querySelector('input[placeholder="+91 XXXXX XXXXX"]').value,
-          email: e.target.querySelector('input[placeholder="your@email.com"]').value,
-          service: e.target.querySelector('select').value,
-          message: e.target.querySelector('textarea').value,
+          name: formData.get('name'),
+          phone: formData.get('phone'),
+          email: formData.get('email'),
+          service: formData.get('service'),
+          message: formData.get('message'),
           status: 'new',
           createdAt: new Date().toISOString()
         });
@@ -943,6 +902,33 @@
     window.addEventListener('DOMContentLoaded', () => {
       initGallerySync();
       initJobsSync();
+    });
+
+    // Scroll animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    // Mobile menu toggle
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+    });
+
+    // Navbar shadow on scroll
+    window.addEventListener('scroll', () => {
+      const nav = document.querySelector('.navbar');
+      if (window.scrollY > 50) {
+        nav.style.boxShadow = '0 4px 30px rgba(0,0,0,0.1)';
+      } else {
+        nav.style.boxShadow = '0 2px 20px rgba(0,0,0,0.06)';
+      }
     });
   </script>
 </body>
