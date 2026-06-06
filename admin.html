@@ -27,6 +27,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyATvwM_0B9ibtD9MniIoiNuiirnC0mb2AY",
@@ -40,11 +41,12 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
     // App State
     const roles={SUPER:'Super Admin',ADMIN:'Company Admin',EDITOR:'Editor',MODERATOR:'Moderator'};
     const accounts=[
-      {id:'u1',name:'Sagar Admin',email:'super@newtech.test',password:'Admin@12345',role:roles.SUPER,status:'active'},
+      {id:'u1',name:'Sofia Admin',email:'super@newtech.test',password:'Admin@12345',role:roles.SUPER,status:'active'},
       {id:'u2',name:'Madan Manager',email:'company@newtech.test',password:'Admin@12345',role:roles.ADMIN,status:'active'}
     ];
     const permissions={
@@ -57,7 +59,7 @@
       leads:{label:'Inquiries',singular:'Lead',icon:'📥',fields:[['name','Name','text'],['phone','Phone','tel'],['email','Email','email'],['service','Service','text'],['status','Status','select',['new','contacted','closed','junk']],['message','Message','textarea']]},
       applicants:{label:'Job Applicants',singular:'Applicant',icon:'👨‍💼',fields:[['name','Name','text'],['phone','Phone','tel'],['email','Email','email'],['jobTitle','Applied For','text'],['status','Status','select',['new','reviewed','interviewed','hired','rejected']],['resume','Notes','textarea']]},
       jobs:{label:'Job Openings',singular:'Job',icon:'💼',fields:[['title','Job Title','text'],['status','Status','select',['active','expired','draft']],['expiryDate','Expiry Date','date'],['department','Department','text'],['description','Description','textarea']]},
-      media:{label:'Gallery Manager',singular:'Media',icon:'🖼',fields:[['title','Title','text'],['type','Type','select',['photo','video']],['category','Category','select',['Pleated Mesh','Honey Comb Partition','Invisible Grill','Anti Bird Net','Other']],['status','Status','select',['active','inactive']],['url','URL','url']]},
+      media:{label:'Gallery Manager',singular:'Media',icon:'🖼',fields:[['title','Title','text'],['type','Type','select',['photo','video']],['category','Category','select',['Pleated Mesh','Honey Comb Partition','Invisible Grill','Anti Bird Net','Other']],['status','Status','select',['active','inactive']],['file','Upload File','file'],['url','URL','url']]},
       blogs:{label:'Blog Manager',singular:'Blog',icon:'✍️',fields:[['title','Title','text'],['status','Status','select',['draft','published']],['category','Category','select',['Pleated Mesh','Honey Comb Partition','Invisible Grill','Anti Bird Net','Other']],['content','Content','textarea']]},
       users:{label:'Users',singular:'User',icon:'👥',fields:[['name','Name','text'],['email','Email','email'],['role','Role','select',['Super Admin','Company Admin','Editor','Moderator']],['status','Status','select',['active','inactive']]]}
     };
@@ -128,12 +130,40 @@
       $('modal').innerHTML = `<div class="modal-card"><h2>${id?'Edit':'Add'} ${schema.singular}</h2><form id="recordForm">${schema.fields.map(f=>fieldHtml(f, record[f[0]])).join('')}<br><button class="btn btn-primary" type="submit">Save</button><button type="button" onclick="closeModal()">Cancel</button></form></div>`;
       $('recordForm').onsubmit = async (e) => {
         e.preventDefault();
-        const fd = new FormData(e.target);
-        const data = Object.fromEntries(fd.entries());
-        if(id) await updateDoc(doc(db, key, id), data);
-        else await addDoc(collection(db, key), {...data, createdAt: new Date().toISOString()});
-        log(`${id?'Updated':'Added'} ${schema.singular}`);
-        closeModal();
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
+        try {
+          const fd = new FormData(e.target);
+          const data = Object.fromEntries(fd.entries());
+          
+          // Handle File Upload for Media
+          const fileInput = e.target.querySelector('input[type="file"]');
+          if (fileInput && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            const storageRef = ref(storage, `gallery/${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            data.url = downloadURL;
+            delete data.file; // Remove the file object from Firestore data
+          } else {
+            delete data.file;
+          }
+
+          if(id) await updateDoc(doc(db, key, id), data);
+          else await addDoc(collection(db, key), {...data, createdAt: new Date().toISOString()});
+          
+          log(`${id?'Updated':'Added'} ${schema.singular}`);
+          toast(`${schema.singular} saved successfully!`);
+          closeModal();
+        } catch (err) {
+          console.error(err);
+          alert('Error saving record: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Save';
+        }
       };
     };
 
