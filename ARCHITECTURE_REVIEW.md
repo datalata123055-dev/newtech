@@ -13,7 +13,7 @@
 
 ## Implemented architecture
 
-- `index.html` now preserves the original public website and only adds a visible `Company Login` button in the top-right header, hamburger menu, and mobile floating action area, plus removal of accidental Markdown code fences for valid HTML rendering.
+- `index.html` now preserves the original public website and only adds a visible `Company Login` button in the top-right header, plus removal of accidental Markdown code fences for valid HTML rendering.
 - `admin.html` is the centralized admin SPA with:
   - professional login screen,
   - demo role-based authentication,
