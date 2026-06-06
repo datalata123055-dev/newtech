@@ -817,16 +817,41 @@
     // Global access for dynamic rendering
     window.firebaseDB = db;
 
+    // Load Gallery from Firebase
+    function initGallerySync() {
+      const galleryGrid = document.querySelector('.gallery-grid');
+      onSnapshot(query(collection(db, "media"), orderBy("createdAt", "desc")), (snapshot) => {
+        if (!snapshot.empty) {
+          galleryGrid.innerHTML = '';
+          snapshot.forEach((doc) => {
+            const item = doc.data();
+            const isVideo = item.type === 'video';
+            galleryGrid.innerHTML += `
+              <div class="gallery-item fade-up visible">
+                ${isVideo ? 
+                  `<video src="${item.url}" style="width:100%; height:100%; object-fit:cover;" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>` : 
+                  `<img src="${item.url}" alt="${item.title}">`
+                }
+                <div class="gallery-overlay">
+                  <div>
+                    <span style="background:var(--secondary); color:white; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; text-transform:uppercase;">${item.category}</span>
+                    <h4>${item.title}</h4>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+        }
+      });
+    }
+
     // Load Jobs from Firebase
-    async function loadJobs() {
+    function initJobsSync() {
       const jobsContainer = document.getElementById('jobsContainer');
-      try {
-        const q = query(collection(db, "jobs"), where("status", "==", "active"));
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
+      onSnapshot(query(collection(db, "jobs"), where("status", "==", "active")), (snapshot) => {
+        if (!snapshot.empty) {
           jobsContainer.innerHTML = '';
-          querySnapshot.forEach((doc) => {
+          snapshot.forEach((doc) => {
             const job = doc.data();
             jobsContainer.innerHTML += `
               <div class="card fade-up visible" style="background: white; padding: 30px; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
@@ -845,9 +870,7 @@
         } else {
           jobsContainer.innerHTML = '<div style="grid-column: 1/-1; padding: 60px; text-align: center; color: #94a3b8; background: white; border-radius: 20px; border: 1px dashed #cbd5e1;">No active job openings at the moment. Please check back later!</div>';
         }
-      } catch (e) {
-        console.error("Error loading jobs: ", e);
-      }
+      });
     }
 
     window.openJobForm = function(title) {
@@ -917,7 +940,10 @@
       }
     };
 
-    window.addEventListener('DOMContentLoaded', loadJobs);
+    window.addEventListener('DOMContentLoaded', () => {
+      initGallerySync();
+      initJobsSync();
+    });
   </script>
 </body>
 </html>
