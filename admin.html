@@ -12,8 +12,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
   <style>
-    :root{--bg:#f8fafc;--card:#ffffff;--ink:#1e293b;--muted:#64748b;--line:#e2e8f0;--navy:#1e3a8a;--navy-900:#172554;--orange:#f97316;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--shadow:0 4px 20px rgba(30,58,138,0.08);--radius:16px;color-scheme:light}body.dark{--bg:#0f172a;--card:#1e293b;--ink:#f8fafc;--muted:#94a3b8;--line:#334155;--navy:#3b82f6;--navy-900:#0f172a;--shadow:0 20px 50px rgba(0,0,0,0.3);color-scheme:dark}*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}.login-shell{min-height:100vh;display:grid;grid-template-columns:1.1fr .9fr;background:linear-gradient(135deg,#f0f4ff 0%,#fff5eb 100%);}.login-brand{color:var(--navy-900);padding:64px;display:flex;flex-direction:column;justify-content:center}.login-brand h1{font-size:clamp(42px,6vw,72px);line-height:.98;letter-spacing:-.05em;margin:18px 0}.login-brand p{font-size:18px;line-height:1.75;color:var(--muted);max-width:680px}.security-list{display:grid;gap:12px;margin-top:24px}.security-list span{display:flex;gap:10px;align-items:center;color:var(--navy)}.login-panel{display:flex;align-items:center;justify-content:center;padding:28px}.login-card{width:100%;max-width:460px;background:var(--card);border:1px solid rgba(255,255,255,.16);box-shadow:var(--shadow);border-radius:28px;padding:32px}.logo{width:auto;height:58px;border-radius:0;background:none;display:flex;align-items:center;gap:10px;} .logo img{height:100%;}.login-card h2{font-size:30px;margin:18px 0 8px}.muted{color:var(--muted)}.field{display:grid;gap:8px;margin:14px 0}.field label{font-size:13px;font-weight:800}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:var(--card);color:var(--ink)}.field textarea{min-height:96px;resize:vertical}.hint{font-size:12px;color:var(--muted);line-height:1.6}.btn{border:0;border-radius:12px;padding:11px 15px;font-weight:800;display:inline-flex;gap:8px;align-items:center;justify-content:center}.btn-primary{background:var(--orange);color:white}.btn-navy{background:var(--navy);color:white}.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}.btn-danger{background:#fee2e2;color:var(--red)}.login-card .btn{width:100%;margin-top:10px}.app{min-height:100vh;display:grid;grid-template-columns:280px 1fr}.sidebar{background:#1e3a8a;color:white;position:sticky;top:0;height:100vh;overflow:auto;padding:18px;box-shadow: 4px 0 15px rgba(0,0,0,0.05);}.side-head{display:flex;align-items:center;gap:12px;padding:8px 6px 22px;border-bottom:1px solid rgba(255,255,255,.12)}.side-head .logo{width:46px;height:46px}.role-chip{font-size:11px;background:rgba(249,115,22,.2);color:#fed7aa;border:1px solid rgba(249,115,22,.35);padding:4px 8px;border-radius:999px} .badge-notify{background:var(--red);color:white;font-size:10px;padding:2px 6px;border-radius:10px;margin-left:auto;font-weight:800;}.nav-section{margin:20px 0 8px;color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.nav-item{width:100%;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#cbd5e1;padding:12px;border-radius:12px;text-align:left;font-weight:700}.nav-item:hover,.nav-item.active{background:var(--orange);color:white;box-shadow: 0 4px 12px rgba(249,115,22,0.3);}.main{min-width:0}.topbar{height:72px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:10}.topbar-left{display:flex;align-items:center;gap:12px}.mobile-menu{display:none}.search{position:relative;min-width:min(440px,45vw)}.search input{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:11px 18px}.top-actions{display:flex;align-items:center;gap:10px}.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--orange));display:grid;place-items:center;color:#fff;font-weight:900}.content{padding:28px}.breadcrumbs{font-size:13px;color:var(--muted);margin-bottom:10px}.page-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:22px}.page-head h1{margin:0;font-size:30px;letter-spacing:-.03em}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:20px}.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);transition: transform 0.2s;} .stat:hover{transform: translateY(-5px);}.stat span{color:var(--muted);font-size:13px;font-weight:800}.stat strong{display:block;font-size:36px;margin-top:8px;color:var(--orange)}.grid{display:grid;grid-template-columns:1.5fr .9fr;gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 24px rgba(16,24,40,.04);padding:18px}.card h2{font-size:18px;margin:0 0 14px}.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}.filters{display:flex;gap:10px;flex-wrap:wrap}.filters input,.filters select{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);padding:10px 12px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:760px;background:var(--card)}th,td{padding:13px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--bg)}tr:last-child td{border-bottom:0}.badge{display:inline-flex;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:800}.published,.active,.verified,.shortlisted{background:#dcfce7;color:#15803d}.draft,.pending,.scheduled,.reviewing,.in-progress{background:#fef3c7;color:#a16207}.inactive,.expired,.rejected,.cancelled{background:#fee2e2;color:#b91c1c}.quoted,.contacted,.closed{background:#dbeafe;color:#1d4ed8}.pagination{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:12px}.icon-btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 10px}.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}.media-tile{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card)}.media-thumb{height:110px;background:linear-gradient(135deg,#dbeafe,#ffedd5);display:grid;place-items:center;font-size:34px}.media-tile div:last-child{padding:10px}.activity{display:grid;gap:10px}.activity-item{display:flex;gap:10px;border-bottom:1px solid var(--line);padding-bottom:10px}.activity-dot{width:10px;height:10px;border-radius:50%;background:var(--orange);margin-top:5px;flex:0 0 auto}.modal{position:fixed;inset:0;background:rgba(2,6,23,.62);display:grid;place-items:center;padding:18px;z-index:100}.modal-card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);width:min(760px,100%);max-height:90vh;overflow:auto;padding:22px}.modal-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.toast-wrap{position:fixed;right:18px;bottom:18px;display:grid;gap:10px;z-index:200}.toast{background:#101828;color:#fff;border-radius:14px;padding:13px 16px;box-shadow:var(--shadow)}.danger-zone{border:1px dashed #fecaca;background:#fff7f7;border-radius:14px;padding:12px;color:#991b1b}.empty{text-align:center;color:var(--muted);padding:32px}.loading{opacity:.6;pointer-events:none}.firebase-badge{display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#e65100;font-size:11px;font-weight:800;padding:3px 8px;border-radius:8px;border:1px solid #ffcc02;}@media(max-width:1050px){.app{grid-template-columns:1fr}.sidebar{position:fixed;z-index:50;transform:translateX(-105%);transition:.2s;width:280px}.sidebar.open{transform:none}.mobile-menu{display:inline-flex}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.login-shell{grid-template-columns:1fr}.login-brand{display:none}}@media(max-width:640px){.content{padding:18px}.topbar{padding:0 14px}.search{display:none}.stats{grid-template-columns:1fr}.page-head{display:block}.form-grid{grid-template-columns:1fr}.toolbar{align-items:stretch}.filters,.filters input,.filters select,.toolbar .btn{width:100%}.filters{display:grid}.top-actions .muted{display:none}}
+    :root{--bg:#f8fafc;--card:#ffffff;--ink:#1e293b;--muted:#64748b;--line:#e2e8f0;--navy:#1e3a8a;--navy-900:#172554;--orange:#f97316;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--shadow:0 4px 20px rgba(30,58,138,0.08);--radius:16px;color-scheme:light}body.dark{--bg:#0f172a;--card:#1e293b;--ink:#f8fafc;--muted:#94a3b8;--line:#334155;--navy:#3b82f6;--navy-900:#0f172a;--shadow:0 20px 50px rgba(0,0,0,0.3);color-scheme:dark}*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}.login-shell{min-height:100vh;display:grid;grid-template-columns:1.1fr .9fr;background:linear-gradient(135deg,#f0f4ff 0%,#fff5eb 100%);}.login-brand{color:var(--navy-900);padding:64px;display:flex;flex-direction:column;justify-content:center}.login-brand h1{font-size:clamp(42px,6vw,72px);line-height:.98;letter-spacing:-.05em;margin:18px 0}.login-brand p{font-size:18px;line-height:1.75;color:var(--muted);max-width:680px}.security-list{display:grid;gap:12px;margin-top:24px}.security-list span{display:flex;gap:10px;align-items:center;color:var(--navy)}.login-panel{display:flex;align-items:center;justify-content:center;padding:28px}.login-card{width:100%;max-width:460px;background:var(--card);border:1px solid rgba(255,255,255,.16);box-shadow:var(--shadow);border-radius:28px;padding:32px}.logo{width:auto;height:58px;border-radius:0;background:none;display:flex;align-items:center;gap:10px;} .logo img{height:100%;}.login-card h2{font-size:30px;margin:18px 0 8px}.muted{color:var(--muted)}.field{display:grid;gap:8px;margin:14px 0}.field label{font-size:13px;font-weight:800}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:var(--card);color:var(--ink)}.field textarea{min-height:96px;resize:vertical}.hint{font-size:12px;color:var(--muted);line-height:1.6}.btn{border:0;border-radius:12px;padding:11px 15px;font-weight:800;display:inline-flex;gap:8px;align-items:center;justify-content:center}.btn-primary{background:var(--orange);color:white}.btn-navy{background:var(--navy);color:white}.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}.btn-danger{background:#fee2e2;color:var(--red)}.login-card .btn{width:100%;margin-top:10px}.app{min-height:100vh;display:grid;grid-template-columns:280px 1fr}.sidebar{background:#1e3a8a;color:white;position:sticky;top:0;height:100vh;overflow:auto;padding:18px;box-shadow: 4px 0 15px rgba(0,0,0,0.05);}.side-head{display:flex;align-items:center;gap:12px;padding:8px 6px 22px;border-bottom:1px solid rgba(255,255,255,.12)}.side-head .logo{width:46px;height:46px}.role-chip{font-size:11px;background:rgba(249,115,22,.2);color:#fed7aa;border:1px solid rgba(249,115,22,.35);padding:4px 8px;border-radius:999px} .badge-notify{background:var(--red);color:white;font-size:10px;padding:2px 6px;border-radius:10px;margin-left:auto;font-weight:800;}.nav-section{margin:20px 0 8px;color:#94a3b8;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.nav-item{width:100%;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#cbd5e1;padding:12px;border-radius:12px;text-align:left;font-weight:700}.nav-item:hover,.nav-item.active{background:var(--orange);color:white;box-shadow: 0 4px 12px rgba(249,115,22,0.3);}.main{min-width:0}.topbar{height:72px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:10}.topbar-left{display:flex;align-items:center;gap:12px}.mobile-menu{display:none}.search{position:relative;min-width:min(440px,45vw)}.search input{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:11px 18px}.top-actions{display:flex;align-items:center;gap:10px}.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--orange));display:grid;place-items:center;color:#fff;font-weight:900}.content{padding:28px}.breadcrumbs{font-size:13px;color:var(--muted);margin-bottom:10px}.page-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:22px}.page-head h1{margin:0;font-size:30px;letter-spacing:-.03em}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:20px}.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);transition: transform 0.2s;} .stat:hover{transform: translateY(-5px);}.stat span{color:var(--muted);font-size:13px;font-weight:800}.stat strong{display:block;font-size:36px;margin-top:8px;color:var(--orange)}.grid{display:grid;grid-template-columns:1.5fr .9fr;gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 24px rgba(16,24,40,.04);padding:18px}.card h2{font-size:18px;margin:0 0 14px}.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}.filters{display:flex;gap:10px;flex-wrap:wrap}.filters input,.filters select{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);padding:10px 12px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:760px;background:var(--card)}th,td{padding:13px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--bg)}tr:last-child td{border-bottom:0}.badge{display:inline-flex;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:800}.published,.active,.verified,.shortlisted{background:#dcfce7;color:#15803d}.draft,.pending,.scheduled,.reviewing,.in-progress{background:#fef3c7;color:#a16207}.inactive,.expired,.rejected,.cancelled{background:#fee2e2;color:#b91c1c}.quoted,.contacted,.closed{background:#dbeafe;color:#1d4ed8}.pagination{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:12px}.icon-btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 10px}.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}.media-tile{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card)}.media-thumb{height:110px;background:linear-gradient(135deg,#dbeafe,#ffedd5);display:grid;place-items:center;font-size:34px}.media-thumb img,.media-thumb video{width:100%;height:100%;object-fit:cover}.media-tile div:last-child{padding:10px}.activity{display:grid;gap:10px}.activity-item{display:flex;gap:10px;border-bottom:1px solid var(--line);padding-bottom:10px}.activity-dot{width:10px;height:10px;border-radius:50%;background:var(--orange);margin-top:5px;flex:0 0 auto}.modal{position:fixed;inset:0;background:rgba(2,6,23,.62);display:grid;place-items:center;padding:18px;z-index:100}.modal-card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);width:min(760px,100%);max-height:90vh;overflow:auto;padding:22px}.modal-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.toast-wrap{position:fixed;right:18px;bottom:18px;display:grid;gap:10px;z-index:200}.toast{background:#101828;color:#fff;border-radius:14px;padding:13px 16px;box-shadow:var(--shadow)}.danger-zone{border:1px dashed #fecaca;background:#fff7f7;border-radius:14px;padding:12px;color:#991b1b}.empty{text-align:center;color:var(--muted);padding:32px}.loading{opacity:.6;pointer-events:none}.firebase-badge{display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#e65100;font-size:11px;font-weight:800;padding:3px 8px;border-radius:8px;border:1px solid #ffcc02;}@media(max-width:1050px){.app{grid-template-columns:1fr}.sidebar{position:fixed;z-index:50;transform:translateX(-105%);transition:.2s;width:280px}.sidebar.open{transform:none}.mobile-menu{display:inline-flex}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.login-shell{grid-template-columns:1fr}.login-brand{display:none}}@media(max-width:640px){.content{padding:18px}.topbar{padding:0 14px}.search{display:none}.stats{grid-template-columns:1fr}.page-head{display:block}.form-grid{grid-template-columns:1fr}.toolbar{align-items:stretch}.filters,.filters input,.filters select,.toolbar .btn{width:100%}.filters{display:grid}.top-actions .muted{display:none}}
   </style>
 </head>
 <body>
@@ -89,6 +90,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const fbAuth = firebase.auth();
 const fstore = firebase.firestore();
+const fstorage = firebase.storage();
 
 // ─── Role & Account Config ────────────────────────────────────────
 const roles = {SUPER_ADMIN:'Super Admin',COMPANY_ADMIN:'Company Admin',EDITOR:'Editor',MODERATOR:'Moderator'};
@@ -144,7 +146,7 @@ const schemas = {
   jobs:{
     label:'Job Vacancies',singular:'Job',icon:'💼',roles:['Super Admin','Company Admin'],firestore:true,
     fields:[['title','Job Title','text'],['department','Department','text'],['status','Status','select',['active','expired','draft']],['expiryDate','Expiry Date','date'],['applications','Applications Count','number'],['description','Description','textarea']],
-    seed:[{id:'j1',title:'Installation Technician',department:'Operations',status:'active',expiryDate:'2026-08-15',applications:0,description:'Install and service screens at customer sites.'}]
+    seed:[{id:'j1',title:'Installation Technician',department:'Operations',status:'active',expiryDate:'2026-08-15',applications:0,description:'Install pleated mesh, invisible grills, honeycomb partitions, and anti-bird nets at customer homes and sites.'}]
   },
   companies:{
     label:'Companies',singular:'Company',icon:'🏢',roles:['Super Admin','Company Admin'],firestore:false,
@@ -152,9 +154,14 @@ const schemas = {
     seed:[{id:'c1',name:'NewTech HQ',category:'Manufacturing',status:'verified',contact:'homesolutionsnewtech@gmail.com',phone:'+91 9315739299',logo:'',cover:'',social:''}]
   },
   media:{
-    label:'Media Manager',singular:'Media',icon:'🖼',roles:['Super Admin','Company Admin','Editor','Moderator'],firestore:false,
-    fields:[['title','Title','text'],['type','Type','select',['photo','video']],['category','Category','select',['Pleated Mesh','Honey Comb Partition','Invisible Grill','Anti Bird Net','Other']],['status','Status','select',['active','inactive']],['url','Secure URL','url'],['metadata','Metadata','textarea']],
-    seed:[{id:'m1',title:'Pleated Door Demo',type:'video',category:'Pleated Mesh',status:'active',url:'',metadata:''}]
+    label:'Media Manager',singular:'Media',icon:'🖼',roles:['Super Admin','Company Admin','Editor','Moderator'],firestore:true,
+    fields:[['title','Title','text'],['type','Type','select',['photo','video']],['category','Category','select',['Pleated Mesh','Honey Comb Partition','Invisible Grill','Anti Bird Net','Other']],['status','Status','select',['active','inactive']],['upload','Upload Photo / Video','file'],['url','Secure URL','url'],['metadata','Metadata','textarea']],
+    seed:[
+      {id:'m1',title:'Pleated Mesh Window Installation',type:'photo',category:'Pleated Mesh',status:'active',url:'assets/services/pleated-mesh.jpg',metadata:'Real pleated mesh installation reference.'},
+      {id:'m2',title:'Honey Comb Partition Work',type:'photo',category:'Honey Comb Partition',status:'active',url:'assets/services/honeycomb.jpg',metadata:'Honeycomb partition service reference.'},
+      {id:'m3',title:'Invisible Grill Balcony Safety',type:'photo',category:'Invisible Grill',status:'active',url:'assets/services/invisible-grill.jpg',metadata:'Invisible grill safety installation reference.'},
+      {id:'m4',title:'Anti Bird Net Balcony Protection',type:'photo',category:'Anti Bird Net',status:'active',url:'assets/services/bird-net.jpg',metadata:'Anti bird net installation reference.'}
+    ]
   },
   news:{
     label:'News Manager',singular:'News',icon:'📰',roles:['Super Admin','Company Admin','Editor','Moderator'],firestore:false,
@@ -204,9 +211,9 @@ function setupFirestoreListeners(){
   firestoreCollections.forEach(key=>{
     const unsub = fstore.collection(key).orderBy('createdAt','desc').limit(200)
       .onSnapshot(snap=>{
-        const docs = snap.docs.map(d=>({id:d.id,...d.data()}));
+        const docs = snap.docs.map(d=>({...d.data(), id:d.id}));
         // Merge: Firestore is source of truth for these collections
-        db[key] = docs.length > 0 ? docs : db[key];
+        db[key] = docs;
         save();
         if(state.view === key || state.view === 'overview') renderContent();
         updateSyncBadge(true);
@@ -229,7 +236,8 @@ function updateSyncBadge(ok){
 async function fsCreate(key, obj){
   if(!schemas[key]?.firestore) return;
   try {
-    const docRef = await fstore.collection(key).add({...obj, createdAt: obj.createdAt || new Date().toISOString()});
+    const {id, upload, ...firestoreObj} = obj;
+    const docRef = await fstore.collection(key).add({...firestoreObj, createdAt: obj.createdAt || new Date().toISOString()});
     // Update local id to match Firestore id
     const idx = db[key].findIndex(r=>r.id===obj.id);
     if(idx>-1) db[key][idx].id = docRef.id;
@@ -390,7 +398,7 @@ function renderOverview(){
       <div class="card"><h2>Security & RBAC</h2>
         <p class="muted">Current role: <strong>${state.session.role}</strong></p>
         <p class="muted">Auth provider: <strong>${state.session.provider||'demo'}</strong></p>
-        <div class="danger-zone" style="margin-top:12px">Firebase real-time sync is active for: Leads, Quotes, Contracts, Careers, Jobs. Other sections use local storage.</div>
+        <div class="danger-zone" style="margin-top:12px">Firebase real-time sync is active for: Leads, Quotes, Contracts, Careers, Jobs, and Media. Users, company profile, news, blogs, and ads use browser storage.</div>
       </div>
     </div>`;
 }
@@ -422,7 +430,7 @@ function managerSub(key){
     jobs:      'Manage job vacancies, set expiry dates and track applications. Synced with Firebase.',
     users:     'Role-based account administration.',
     companies: 'Company information, logo, contact and verification.',
-    media:     'Upload photos/videos, manage categories and metadata.',
+    media:     'Upload photos/videos to Firebase Storage and publish them to the live gallery.',
     news:      'Create, draft, publish, schedule and manage news articles.',
     blogs:     'Rich text content with categories, tags, SEO and publishing workflow.',
     ads:       'Create banners, set start/end dates and track analytics.'
@@ -479,7 +487,14 @@ function tableHtml(key,cols,rows){
 }
 
 function mediaGrid(rows){
-  return `<div class="media-grid">${rows.map(r=>`<div class="media-tile"><div class="media-thumb">${r.type==='video'?'▶':'▧'}</div><div><input type="checkbox" onchange="toggleOne('${r.id}',this.checked)"> <strong>${escapeHtml(r.title)}</strong><br><span class="muted">${escapeHtml(r.category||'')} • ${escapeHtml(r.status)}</span><br><button class="icon-btn" onclick="openForm('media','${r.id}')">Metadata</button> <button class="icon-btn" onclick="confirmDelete('media','${r.id}')">Delete</button></div></div>`).join('')||'<div class="empty">No media found.</div>'}</div>`;
+  return `<div class="media-grid">${rows.map(r=>`<div class="media-tile"><div class="media-thumb">${mediaPreview(r)}</div><div><input type="checkbox" ${state.selected.has(r.id)?'checked':''} onchange="toggleOne('${r.id}',this.checked)"> <strong>${escapeHtml(r.title)}</strong><br><span class="muted">${escapeHtml(r.category||'')} • ${escapeHtml(r.status)}</span><br><button class="icon-btn" onclick="openForm('media','${r.id}')">Edit / Upload</button> <button class="icon-btn" onclick="confirmDelete('media','${r.id}')">Delete</button></div></div>`).join('')||'<div class="empty">No media found.</div>'}</div>`;
+}
+
+function mediaPreview(r){
+  if(!r.url) return r.type==='video'?'▶':'▧';
+  const url = escapeAttr(r.url);
+  if(r.type==='video') return `<video src="${url}" muted playsinline preload="metadata"></video>`;
+  return `<img src="${url}" alt="${escapeAttr(r.title||'Project media')}">`;
 }
 
 function formatCell(value){
@@ -505,18 +520,34 @@ function openForm(key,id){
     <div class="modal-head"><div><h2>${id?'Edit':'Create'} ${schema.singular}</h2><p class="muted">${schema.label}</p></div><button class="icon-btn" onclick="closeModal()">✕</button></div>
     <form id="recordForm"><div class="form-grid">${schema.fields.map(f=>fieldHtml(f,record?.[f[0]])).join('')}</div><button class="btn btn-primary" type="submit" style="margin-top:12px">Save ${schema.singular}</button></form>
   </div>`;
-  document.getElementById('recordForm').onsubmit = e=>{e.preventDefault();saveRecord(key,id,new FormData(e.currentTarget));};
+  document.getElementById('recordForm').onsubmit = async e=>{e.preventDefault();await saveRecord(key,id,new FormData(e.currentTarget));};
 }
 
 function fieldHtml([name,label,type,options],value=''){
   if(type==='select') return `<div class="field"><label>${label}</label><select name="${name}">${options.map(o=>`<option ${value===o?'selected':''} value="${o}">${o}</option>`).join('')}</select></div>`;
   if(type==='textarea') return `<div class="field" style="grid-column:1/-1"><label>${label}</label><textarea name="${name}">${escapeHtml(value??'')}</textarea></div>`;
+  if(type==='file') return `<div class="field"><label>${label}</label><input name="${name}" type="file" accept="image/*,video/*"><span class="hint">Upload a real project photo/video, or paste an existing secure URL below.</span></div>`;
   return `<div class="field"><label>${label}</label><input name="${name}" type="${type}" value="${escapeAttr(value??'')}"></div>`;
 }
 
-function saveRecord(key,id,form){
+async function saveRecord(key,id,form){
   const obj = {};
-  for(const [k,v] of form.entries()) obj[k] = sanitize(v);
+  for(const [k,v] of form.entries()){
+    if(v instanceof File){ if(v.name) obj[k] = v; }
+    else obj[k] = sanitize(v);
+  }
+  if(key==='media' && obj.upload){
+    try {
+      const uploadInfo = await uploadMediaFile(obj.upload, id || uid());
+      obj.url = uploadInfo.url;
+      obj.type = uploadInfo.type;
+      obj.metadata = [obj.metadata, `Uploaded file: ${uploadInfo.name}`].filter(Boolean).join('\n');
+    } catch(e){
+      toast(`Upload failed: ${e.message}`);
+      return;
+    }
+  }
+  delete obj.upload;
   if(id){
     const i = db[key].findIndex(r=>r.id===id);
     const updated = {...db[key][i],...obj, updatedAt:new Date().toISOString()};
@@ -530,6 +561,17 @@ function saveRecord(key,id,form){
     log(`Created ${schemas[key].singular}: ${obj.title||obj.name||obj.customerName||''}`,key);
   }
   save(); closeModal(); renderContent(); toast('Record saved ✓');
+}
+
+
+async function uploadMediaFile(file, recordId){
+  if(!file.type.startsWith('image/') && !file.type.startsWith('video/')) throw new Error('Only image or video files are allowed');
+  const ext = file.name.split('.').pop() || (file.type.startsWith('video/')?'mp4':'jpg');
+  const safeName = file.name.replace(/[^a-z0-9._-]/gi,'-').toLowerCase();
+  const path = `site-media/${recordId}-${Date.now()}-${safeName || 'upload.'+ext}`;
+  const ref = fstorage.ref().child(path);
+  const snap = await ref.put(file, {contentType:file.type, customMetadata:{uploadedBy:state.session?.email||'admin'}});
+  return {url:await snap.ref.getDownloadURL(), name:file.name, type:file.type.startsWith('video/')?'video':'photo'};
 }
 
 function confirmDelete(key,id){
