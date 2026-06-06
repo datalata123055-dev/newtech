@@ -13,7 +13,7 @@
 
 ## Implemented architecture
 
-- `index.html` is now a professional responsive marketing website with a visible `Company Login` button in the top-right header.
+- `index.html` now preserves the original public website and only adds a visible `Company Login` button in the top-right header, plus removal of accidental Markdown code fences for valid HTML rendering.
 - `admin.html` is the centralized admin SPA with:
   - professional login screen,
   - demo role-based authentication,
@@ -25,7 +25,7 @@
   - activity/audit logging,
   - confirmation dialogs, toast notifications, loading-ready UI states and dark mode,
   - responsive mobile sidebar.
-- `Admin` and `New` are retained as backward-compatible redirect routes to `admin.html`.
+- `Admin` and `New` are restored as the original full admin panel source files so existing work is not discarded; `admin.html` is the new canonical fully controlled admin dashboard route.
 - `types.ts` defines scalable TypeScript contracts for users, companies, media, content, ads, jobs and activity logs so the static prototype can migrate cleanly into a typed application.
 
 ## Role permissions
