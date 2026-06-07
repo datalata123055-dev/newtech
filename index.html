@@ -230,26 +230,93 @@
   .feature-card h3{font-size:20px;color:var(--navy);margin-bottom:12px;font-weight:700;transition:color .4s;}
   .feature-card p{color:var(--gray);font-size:14px;line-height:1.7;transition:color .4s;}
 
-  /* GALLERY */
-  .gallery{background:var(--light);}
+  /* GALLERY — Modern Media Cards */
+  .gallery{background:#f1f5f9;}
+  .gallery-filters{
+    display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+    max-width:1280px;margin:0 auto 40px;padding:0 20px;
+  }
+  .filter-btn{
+    padding:9px 22px;border-radius:999px;
+    border:2px solid #e2e8f0;background:#fff;
+    color:#475569;font-weight:600;font-size:13px;font-family:inherit;
+    cursor:pointer;transition:all .3s;
+  }
+  .filter-btn:hover,.filter-btn.active{
+    background:var(--orange);border-color:var(--orange);color:#fff;
+    transform:translateY(-2px);box-shadow:0 6px 20px rgba(249,115,22,.3);
+  }
   .gallery-grid{
     max-width:1280px;margin:0 auto;
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:25px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:28px;
+    padding:0 20px;
   }
-  .gallery-item{
-    position:relative;overflow:hidden;border-radius:15px;
-    aspect-ratio:4/3;cursor:pointer;
+  .gallery-card{
+    background:#fff;border-radius:22px;overflow:hidden;
+    box-shadow:0 4px 24px rgba(0,0,0,.07);
+    transition:all .45s cubic-bezier(.34,1.56,.64,1);
+    cursor:pointer;position:relative;
   }
-  .gallery-item img,.gallery-item video{width:100%;height:100%;object-fit:cover;transition:transform .6s;}
-  .gallery-item:hover img,.gallery-item:hover video{transform:scale(1.1);}
-  .gallery-overlay{
+  .gallery-card:hover{
+    transform:translateY(-12px);
+    box-shadow:0 24px 56px rgba(30,58,138,.16);
+  }
+  .gallery-card-media{
+    position:relative;height:240px;overflow:hidden;background:#f1f5f9;
+  }
+  .gallery-card-media img,.gallery-card-media video{
+    width:100%;height:100%;object-fit:cover;transition:transform .6s ease;
+    display:block;
+  }
+  .gallery-card:hover .gallery-card-media img,
+  .gallery-card:hover .gallery-card-media video{transform:scale(1.08);}
+  .media-type-badge{
+    position:absolute;top:12px;left:12px;
+    background:rgba(0,0,0,.52);backdrop-filter:blur(6px);
+    color:#fff;font-size:11px;font-weight:700;
+    padding:4px 11px;border-radius:999px;
+    display:flex;align-items:center;gap:5px;
+    text-transform:uppercase;letter-spacing:.06em;
+  }
+  .play-btn-overlay{
     position:absolute;inset:0;
-    background:linear-gradient(to top,rgba(30,58,138,0.9),transparent);
-    display:flex;align-items:flex-end;padding:25px;
-    opacity:0;transition:opacity .4s;
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;transition:opacity .3s;
+    background:rgba(0,0,0,.18);
   }
-  .gallery-item:hover .gallery-overlay{opacity:1;}
-  .gallery-overlay h4{color:#fff;font-size:18px;font-weight:700;}
+  .gallery-card:hover .play-btn-overlay{opacity:1;}
+  .play-btn{
+    width:58px;height:58px;border-radius:50%;
+    background:rgba(249,115,22,.92);
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;color:#fff;
+    box-shadow:0 8px 28px rgba(249,115,22,.5);
+    transition:transform .3s;
+  }
+  .gallery-card:hover .play-btn{transform:scale(1.12);}
+  .gallery-card-body{padding:18px 22px 22px;}
+  .gallery-card-category{
+    font-size:11px;font-weight:800;text-transform:uppercase;
+    letter-spacing:.09em;color:var(--orange);margin-bottom:7px;
+  }
+  .gallery-card-title{
+    font-size:16px;font-weight:700;color:var(--navy);
+    line-height:1.4;margin:0;
+  }
+  .gallery-empty{
+    grid-column:1/-1;text-align:center;padding:60px 20px;
+    color:var(--gray);font-size:16px;
+  }
+  .gallery-skeleton{
+    border-radius:22px;height:320px;
+    background:linear-gradient(90deg,#f0f0f0 25%,#e6e6e6 50%,#f0f0f0 75%);
+    background-size:200% 100%;
+    animation:shimmer 1.5s infinite;
+  }
+  @keyframes shimmer{
+    0%{background-position:-200% 0;}
+    100%{background-position:200% 0;}
+  }
 
   /* CTA */
   .cta-section{
@@ -543,26 +610,21 @@
 <section class="gallery" id="gallery">
   <div class="section-header fade-up">
     <div class="section-label">Our Work</div>
-    <h2>Recent Installations</h2>
-    <p>See our solutions in action across residential & commercial projects.</p>
+    <h2>Recent <span style="color:var(--orange)">Installations</span></h2>
+    <p>See our solutions in action across residential &amp; commercial projects.</p>
+  </div>
+  <!-- Category Filters -->
+  <div class="gallery-filters fade-up" id="galleryFilters">
+    <button class="filter-btn active" data-filter="all">All Projects</button>
+    <button class="filter-btn" data-filter="Pleated Mesh">Pleated Mesh</button>
+    <button class="filter-btn" data-filter="Invisible Grill">Invisible Grill</button>
+    <button class="filter-btn" data-filter="Honey Comb">Honey Comb</button>
+    <button class="filter-btn" data-filter="Anti Bird Net">Anti Bird Net</button>
   </div>
   <div class="gallery-grid" id="galleryGrid">
-    <div class="gallery-item fade-up">
-      <img src="assets/services/pleated-mesh.jpg" alt="Pleated mesh window installation work">
-      <div class="gallery-overlay"><h4>Pleated Mesh Window Work</h4></div>
-    </div>
-    <div class="gallery-item fade-up">
-      <img src="assets/services/honeycomb.jpg" alt="Honeycomb partition installation work">
-      <div class="gallery-overlay"><h4>Honey Comb Partition Work</h4></div>
-    </div>
-    <div class="gallery-item fade-up">
-      <img src="assets/services/invisible-grill.jpg" alt="Invisible grill balcony installation work">
-      <div class="gallery-overlay"><h4>Invisible Grill Balcony Safety</h4></div>
-    </div>
-    <div class="gallery-item fade-up">
-      <img src="assets/services/bird-net.jpg" alt="Anti bird net balcony protection work">
-      <div class="gallery-overlay"><h4>Anti Bird Net Protection</h4></div>
-    </div>
+    <div class="gallery-skeleton"></div>
+    <div class="gallery-skeleton"></div>
+    <div class="gallery-skeleton"></div>
   </div>
 </section>
 
@@ -762,49 +824,105 @@
   }
 
   // ── Sync Gallery from Admin Media Manager ──
-  // Active media uploaded by admin instantly replaces static images in Recent Installations.
-  const staticGalleryHTML = document.getElementById('galleryGrid').innerHTML;
+  const staticGalleryCards = `
+    <div class="gallery-card fade-up visible">
+      <div class="gallery-card-media">
+        <img src="assets/services/pleated-mesh.jpg" alt="Pleated Mesh" loading="lazy">
+        <div class="media-type-badge">📷 Photo</div>
+      </div>
+      <div class="gallery-card-body">
+        <div class="gallery-card-category">Pleated Mesh</div>
+        <p class="gallery-card-title">Pleated Mesh Window Installation</p>
+      </div>
+    </div>
+    <div class="gallery-card fade-up visible">
+      <div class="gallery-card-media">
+        <img src="assets/services/honeycomb.jpg" alt="Honey Comb Partition" loading="lazy">
+        <div class="media-type-badge">📷 Photo</div>
+      </div>
+      <div class="gallery-card-body">
+        <div class="gallery-card-category">Honey Comb</div>
+        <p class="gallery-card-title">Honey Comb Partition Work</p>
+      </div>
+    </div>
+    <div class="gallery-card fade-up visible">
+      <div class="gallery-card-media">
+        <img src="assets/services/invisible-grill.jpg" alt="Invisible Grill" loading="lazy">
+        <div class="media-type-badge">📷 Photo</div>
+      </div>
+      <div class="gallery-card-body">
+        <div class="gallery-card-category">Invisible Grill</div>
+        <p class="gallery-card-title">Invisible Grill Balcony Safety</p>
+      </div>
+    </div>
+    <div class="gallery-card fade-up visible">
+      <div class="gallery-card-media">
+        <img src="assets/services/bird-net.jpg" alt="Anti Bird Net" loading="lazy">
+        <div class="media-type-badge">📷 Photo</div>
+      </div>
+      <div class="gallery-card-body">
+        <div class="gallery-card-category">Anti Bird Net</div>
+        <p class="gallery-card-title">Anti Bird Net Protection</p>
+      </div>
+    </div>`;
+
+  let allMediaItems = [];
+  let activeFilter = 'all';
+
+  function renderGallery(items) {
+    const grid = document.getElementById('galleryGrid');
+    const filtered = activeFilter === 'all' ? items : items.filter(i => i.category === activeFilter);
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="gallery-empty">✨ No projects yet in this category. Check back soon!</div>';
+      return;
+    }
+    grid.innerHTML = filtered.map(item => {
+      const title    = escapeHtml(item.title    || 'Project Installation');
+      const category = escapeHtml(item.category || 'Our Work');
+      const url      = escapeAttr(item.url);
+      const isVideo  = item.type === 'video';
+      return `
+        <div class="gallery-card fade-up visible">
+          <div class="gallery-card-media">
+            ${isVideo
+              ? `<video src="${url}" muted loop playsinline
+                   onmouseover="this.play()" onmouseout="this.pause()"></video>
+                 <div class="media-type-badge">🎬 Video</div>
+                 <div class="play-btn-overlay"><div class="play-btn">&#9654;</div></div>`
+              : `<img src="${url}" alt="${escapeAttr(title)}" loading="lazy">
+                 <div class="media-type-badge">📷 Photo</div>`}
+          </div>
+          <div class="gallery-card-body">
+            <div class="gallery-card-category">${category}</div>
+            <p class="gallery-card-title">${title}</p>
+          </div>
+        </div>`;
+    }).join('');
+    document.querySelectorAll('.gallery-card.fade-up').forEach(el => observer.observe(el));
+  }
+
+  // Filter button handlers
+  document.getElementById('galleryFilters').addEventListener('click', e => {
+    if (!e.target.classList.contains('filter-btn')) return;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    activeFilter = e.target.dataset.filter;
+    if (allMediaItems.length) renderGallery(allMediaItems);
+  });
 
   db.collection('media')
     .orderBy('createdAt', 'desc')
     .onSnapshot(snap => {
-      const grid = document.getElementById('galleryGrid');
-      // Filter client-side — avoids need for a Firestore composite index
-      const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      allMediaItems = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
         .filter(i => i.url && i.status === 'active');
-
-      if (!items.length) {
-        // No Firebase media — keep static showcase images
-        grid.innerHTML = staticGalleryHTML;
+      if (!allMediaItems.length) {
+        document.getElementById('galleryGrid').innerHTML = staticGalleryCards;
         return;
       }
-
-      grid.innerHTML = items.map(item => {
-        const title    = escapeHtml(item.title    || 'Project Installation');
-        const category = escapeHtml(item.category || 'Our Work');
-        const url      = escapeAttr(item.url);
-        const isVideo  = item.type === 'video';
-        return `
-          <div class="gallery-item fade-up visible">
-            ${isVideo
-              ? `<video src="${url}" muted loop playsinline
-                   onmouseover="this.play()" onmouseout="this.pause()"></video>`
-              : `<img src="${url}" alt="${escapeAttr(title)}" loading="lazy">`}
-            <div class="gallery-overlay">
-              <div>
-                <span style="font-size:10px;text-transform:uppercase;color:var(--orange);font-weight:700;letter-spacing:.06em;">${category}</span>
-                <h4>${title}</h4>
-              </div>
-            </div>
-          </div>`;
-      }).join('');
-
-      // Re-observe new elements for fade-up animation
-      document.querySelectorAll('.gallery-item.fade-up').forEach(el => observer.observe(el));
+      renderGallery(allMediaItems);
     }, err => {
       console.warn('Gallery sync error:', err.message);
-      // Keep static fallback on error
-      grid.innerHTML = staticGalleryHTML;
+      document.getElementById('galleryGrid').innerHTML = staticGalleryCards;
     });
 
   // Sync Careers
