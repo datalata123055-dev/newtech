@@ -950,11 +950,11 @@
   </div>
 </footer>
 
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<!-- Firebase SDKs (compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 <script src="firebase-config.js"></script>
 
 <script>
@@ -1426,6 +1426,7 @@
     .where('status', '==', 'active')
     .orderBy('createdAt', 'desc')
     .onSnapshot(snap => {
+      console.log('Reviews snapshot received, count:', snap.size);
       const grid = document.getElementById('reviewsGrid');
       if (snap.empty) {
         grid.innerHTML = '<div class="review-empty">✨ No reviews yet. Be the first to share your experience!</div>';
@@ -1473,6 +1474,7 @@
 
   // ── Site Settings (thumbnails) listener ─────────────────────
   db.collection('siteSettings').doc('thumbnails').onSnapshot(doc => {
+    console.log('Site settings snapshot received, exists:', doc.exists);
     if (!doc.exists) return;
     const data = doc.data();
 
