@@ -143,8 +143,7 @@ const schemas = {
   users:{
     label:'Users',singular:'User',icon:'👥',roles:['Super Admin'],firestore:false,
     fields:[['name','Name','text'],['email','Email','email'],['role','Role','select',['Super Admin','Company Admin','Editor','Moderator']],['status','Status','select',['active','inactive']]],
-    seed:[]},
-]
+    seed:[]
   },
   quotes:{
     label:'Quote Requests',singular:'Quote',icon:'💰',roles:['Super Admin','Company Admin','Editor'],firestore:true,
@@ -174,7 +173,7 @@ const schemas = {
 };
 
 // ─── App State ────────────────────────────────────────────────────
-let state = {session:null,view:query:'',page:{},filter:{},selected:new Set()};
+let state = {session:null,view:'',query:'',page:{},filter:{},selected:new Set()};
 const storageKey = 'newtech-admin-v3';
 let firestoreListeners = [];
 let fsConnected = false;
