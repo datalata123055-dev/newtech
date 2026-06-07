@@ -75,6 +75,26 @@
   @media(max-width:560px){.job-two-col{grid-template-columns:1fr;}.job-modal-hero{flex-direction:column;text-align:center;}}
 
 @media(max-width:1050px){.app{grid-template-columns:1fr}.sidebar{position:fixed;z-index:50;transform:translateX(-105%);transition:.2s;width:280px}.sidebar.open{transform:none}.mobile-menu{display:inline-flex}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.login-shell{grid-template-columns:1fr}.login-brand{display:none}}@media(max-width:640px){.content{padding:18px}.topbar{padding:0 14px}.search{display:none}.stats{grid-template-columns:1fr}.page-head{display:block}.form-grid{grid-template-columns:1fr}.toolbar{align-items:stretch}.filters,.filters input,.filters select,.toolbar .btn{width:100%}.filters{display:grid}.top-actions .muted{display:none}}
+  
+  /* ── Site Thumbnail Settings ─────────────────────────── */
+  .thumb-hero-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px;}
+  .thumb-hero-card{border:2px solid var(--line);border-radius:18px;overflow:hidden;background:var(--card);transition:box-shadow .2s;}
+  .thumb-hero-card:hover{box-shadow:0 8px 28px rgba(30,58,138,.12);}
+  .thumb-hero-img{height:130px;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:32px;}
+  .thumb-hero-img img{width:100%;height:100%;object-fit:cover;}
+  .thumb-hero-foot{padding:12px;}
+  .thumb-cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;}
+  .thumb-cat-card{border:1.5px solid var(--line);border-radius:18px;overflow:hidden;background:var(--card);transition:box-shadow .2s;}
+  .thumb-cat-card:hover{box-shadow:0 8px 28px rgba(30,58,138,.1);}
+  .thumb-cat-img{height:160px;overflow:hidden;background:var(--bg);}
+  .thumb-cat-img img{width:100%;height:100%;object-fit:cover;}
+  .thumb-cat-foot{padding:14px;}
+  .thumb-upload-zone{border:2.5px dashed var(--line);border-radius:14px;padding:22px;text-align:center;cursor:pointer;transition:all .3s;background:var(--bg);}
+  .thumb-upload-zone:hover,.thumb-upload-zone.dragover{border-color:var(--orange);background:rgba(249,115,22,.05);}
+  .order-arrows{display:flex;gap:4px;}
+  .order-btn{background:var(--bg);border:1px solid var(--line);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+  .order-btn:hover{background:var(--orange);color:#fff;border-color:var(--orange);}
+
   </style>
 </head>
 <body>
@@ -155,10 +175,10 @@ const fstorage = firebase.storage();
 // ─── Role & Account Config ────────────────────────────────────────
 const roles = {SUPER_ADMIN:'Super Admin',COMPANY_ADMIN:'Company Admin',EDITOR:'Editor',MODERATOR:'Moderator'};
 const permissions = {
-  'Super Admin':  ['quotes','careers','jobs','media'],
-  'Company Admin':['quotes','careers','jobs','media'],
-  'Editor':       ['quotes','careers','jobs','media'],
-  'Moderator':    ['quotes','careers','jobs','media']
+  'Super Admin':  ['quotes','careers','jobs','media','thumbnails'],
+  'Company Admin':['quotes','careers','jobs','media','thumbnails'],
+  'Editor':       ['quotes','careers','jobs','media','thumbnails'],
+  'Moderator':    ['quotes','careers','jobs','media','thumbnails']
 };
 // Role map for Firebase Auth users (email → role)
 // Add your admin emails here
@@ -358,7 +378,8 @@ function renderNav(){
     ['quotes',    'Quote Requests',      '💰', 'badge'],
     ['careers',   'Career Applications', '🎓', 'badge'],
     ['jobs',      'Job Vacancies',       '💼'],
-    ['media',     'Media Manager',       '🖼']
+    ['media',     'Media Manager',       '🖼'],
+    ['thumbnails','Site Thumbnails',     '🎨']
   ];
   document.getElementById('navItems').innerHTML = items
     .filter(([id])=>allowed(id))
@@ -380,6 +401,7 @@ function navigate(view){
 }
 
 function renderContent(){
+  if(state.view==='thumbnails') return renderThumbnailSettings();
   return renderManager(state.view);
 }
 
@@ -1090,6 +1112,241 @@ async function muSave(id) {
 }
 
 boot();
+
+// ─── Site Thumbnail Settings ──────────────────────────────────────
+function renderThumbnailSettings(){
+  document.getElementById('content').innerHTML=`
+    <div class="breadcrumbs">Dashboard / Site Thumbnails</div>
+    <div class="page-head">
+      <div>
+        <h1>🎨 Site Thumbnail Settings</h1>
+        <p class="muted">Control hero slider images (up to 5) and the 4 service category thumbnails shown on the live website.</p>
+      </div>
+    </div>
+    <div id="thumbWrap"><div style="text-align:center;padding:48px;color:var(--muted)">⏳ Loading settings…</div></div>
+  `;
+  loadThumbSettings();
+}
+
+async function loadThumbSettings(){
+  await ensureFirebaseUser();
+  let settings={heroSlides:[],categoryImages:{}};
+  try{
+    const doc=await fstore.collection('siteSettings').doc('thumbnails').get();
+    if(doc.exists) settings=doc.data();
+    settings.heroSlides=settings.heroSlides||[];
+    settings.categoryImages=settings.categoryImages||{};
+  }catch(e){console.warn('Load thumb settings:',e.message);}
+  renderThumbUI(settings);
+}
+
+function renderThumbUI(s){
+  const slides=s.heroSlides||[];
+  const cats=s.categoryImages||{};
+  const catList=[
+    {key:'pleatedMesh',   label:'Pleated Mesh',        fallback:'assets/services/pleated-mesh.jpg'},
+    {key:'honeyComb',     label:'Honey Comb Partition', fallback:'assets/services/honeycomb.jpg'},
+    {key:'invisibleGrill',label:'Invisible Grill',      fallback:'assets/services/invisible-grill.jpg'},
+    {key:'antiBirdNet',   label:'Anti Bird Net',         fallback:'assets/services/bird-net.jpg'}
+  ];
+
+  document.getElementById('thumbWrap').innerHTML=`
+    <!-- Hero Slider -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+        <div>
+          <h2 style="margin:0;font-size:20px">🖼️ Hero Slider <span style="font-size:13px;color:var(--muted);font-weight:400">(${slides.length}/5 slides)</span></h2>
+          <p class="muted" style="margin:4px 0 0;font-size:13px">Auto-plays every 4.5s on the homepage. Drag ↑↓ to reorder.</p>
+        </div>
+        ${slides.length<5?`<button class="btn btn-primary" onclick="openThumbModal({type:'hero',index:-1})">＋ Add Slide</button>`:''}
+      </div>
+      <div class="thumb-hero-grid" id="heroSlidesList">
+        ${slides.length
+          ? slides.map((sl,i)=>`
+            <div class="thumb-hero-card">
+              <div class="thumb-hero-img">${sl.url?`<img src="${escapeAttr(sl.url)}" alt="Slide ${i+1}">`:'🖼️'}</div>
+              <div class="thumb-hero-foot">
+                <div style="font-weight:700;font-size:13px;margin-bottom:6px">Slide ${i+1}${sl.title?': '+escapeHtml(sl.title):''}</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  ${i>0?`<button class="order-btn" title="Move up" onclick="moveHeroSlide(${i},-1)">↑</button>`:''}
+                  ${i<slides.length-1?`<button class="order-btn" title="Move down" onclick="moveHeroSlide(${i},1)">↓</button>`:''}
+                  <button class="icon-btn" style="flex:1;font-size:12px" onclick="openThumbModal({type:'hero',index:${i},url:'${escapeAttr(sl.url||'')}',title:'${escapeAttr(sl.title||'')}' })">✏️ Edit</button>
+                  <button class="icon-btn" style="font-size:12px;color:var(--red)" onclick="removeHeroSlide(${i})">🗑️</button>
+                </div>
+              </div>
+            </div>`).join('')
+          :`<div class="empty" style="grid-column:1/-1">No slides yet. Click "+ Add Slide" to add your first hero image.</div>`}
+      </div>
+    </div>
+
+    <!-- Category Thumbnails -->
+    <div class="card">
+      <h2 style="margin:0 0 6px;font-size:20px">🏷️ Service Category Images</h2>
+      <p class="muted" style="margin:0 0 20px;font-size:13px">These appear on the Services section cards on the homepage.</p>
+      <div class="thumb-cat-grid">
+        ${catList.map(c=>`
+          <div class="thumb-cat-card">
+            <div class="thumb-cat-img">
+              <img id="catPreview_${c.key}" src="${escapeAttr(cats[c.key]?.url||c.fallback)}" alt="${escapeHtml(c.label)}">
+            </div>
+            <div class="thumb-cat-foot">
+              <div style="font-weight:700;font-size:14px;margin-bottom:10px">${escapeHtml(c.label)}</div>
+              <button class="btn btn-ghost" style="width:100%;font-size:12px" onclick="openThumbModal({type:'category',key:'${c.key}',label:'${escapeAttr(c.label)}'})">
+                📷 Change Image
+              </button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function openThumbModal(opts){
+  document.getElementById('modal').classList.remove('hidden');
+  const isHero=opts.type==='hero';
+  document.getElementById('modal').innerHTML=`
+    <div class="modal-card" style="max-width:500px">
+      <div class="modal-head">
+        <div><h2>${isHero?(opts.index===-1?'Add Hero Slide':'Edit Slide '+(opts.index+1)):'Change: '+escapeHtml(opts.label||'Image')}</h2>
+        <p class="muted">Upload a photo or paste a direct URL</p></div>
+        <button class="icon-btn" onclick="closeModal()">✕</button>
+      </div>
+      <div style="margin-top:20px">
+        <div class="thumb-upload-zone" id="thumbDropZone" onclick="document.getElementById('thumbFile').click()">
+          <div style="font-size:36px;margin-bottom:8px">📤</div>
+          <div style="font-weight:700;color:var(--ink)">Click to select image</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">JPG, PNG, WebP — max 10MB</div>
+          <input type="file" id="thumbFile" accept="image/*" style="display:none" onchange="previewThumbFile(this)">
+        </div>
+        <div id="thumbFilePreview" style="display:none;margin-top:10px;text-align:center">
+          <img id="thumbPreviewImg" style="max-height:140px;border-radius:12px;max-width:100%">
+          <div style="font-size:12px;color:var(--muted);margin-top:4px" id="thumbFileName"></div>
+        </div>
+        <div style="text-align:center;color:var(--muted);margin:12px 0;font-size:13px">— OR paste image URL —</div>
+        <div class="field"><input type="url" id="thumbUrlInput" placeholder="https://example.com/image.jpg" value="${escapeAttr(opts.url||'')}"></div>
+        ${isHero?`<div class="field" style="margin-top:10px"><label style="font-size:13px;font-weight:700">Slide Title <span style="color:var(--muted);font-weight:400">(optional)</span></label><input type="text" id="thumbTitleInput" placeholder="e.g. Premium Invisible Grill" value="${escapeAttr(opts.title||'')}"></div>`:''}
+        <div id="thumbProgressWrap" style="display:none;margin-top:10px">
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" id="thumbProgressBar" style="width:0%"></div></div>
+          <p class="muted" id="thumbProgressLabel" style="font-size:12px;text-align:center;margin-top:4px">Uploading…</p>
+        </div>
+        <button class="btn btn-primary" id="thumbSaveBtn" style="width:100%;margin-top:14px;padding:13px;font-size:15px" onclick="saveThumbImage(${JSON.stringify(opts).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')})">
+          💾 Save &amp; Go Live
+        </button>
+      </div>
+    </div>`;
+
+  // Drag-and-drop
+  const dz=document.getElementById('thumbDropZone');
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+  dz.addEventListener('drop',e=>{
+    e.preventDefault();dz.classList.remove('dragover');
+    const f=e.dataTransfer.files[0];
+    if(f&&f.type.startsWith('image/')){
+      document.getElementById('thumbFile').files=e.dataTransfer.files;
+      previewThumbFile({files:e.dataTransfer.files});
+    }
+  });
+}
+
+function previewThumbFile(input){
+  const f=input.files?.[0]; if(!f) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    document.getElementById('thumbFilePreview').style.display='block';
+    document.getElementById('thumbPreviewImg').src=ev.target.result;
+    document.getElementById('thumbFileName').textContent=f.name+' ('+Math.round(f.size/1024)+'KB)';
+  };
+  reader.readAsDataURL(f);
+}
+
+async function saveThumbImage(opts){
+  const saveBtn=document.getElementById('thumbSaveBtn');
+  saveBtn.disabled=true; saveBtn.textContent='Saving…';
+  const fileInput=document.getElementById('thumbFile');
+  const urlInput=document.getElementById('thumbUrlInput');
+  const titleInput=document.getElementById('thumbTitleInput');
+  const file=fileInput?.files?.[0];
+  let imageUrl=urlInput?.value?.trim();
+
+  try{
+    if(file){
+      await ensureFirebaseUser();
+      const safeName=file.name.replace(/[^a-z0-9._-]/gi,'-').toLowerCase();
+      const path=`site-thumbnails/${opts.type}/${Date.now()}-${safeName}`;
+      const ref=fstorage.ref().child(path);
+      document.getElementById('thumbProgressWrap').style.display='block';
+      imageUrl=await new Promise((resolve,reject)=>{
+        const task=ref.put(file,{contentType:file.type,customMetadata:{uploadedBy:state.session?.email||'admin'}});
+        task.on('state_changed',
+          snap=>{
+            const pct=(snap.bytesTransferred/snap.totalBytes*100).toFixed(0);
+            const pb=document.getElementById('thumbProgressBar');
+            const pl=document.getElementById('thumbProgressLabel');
+            if(pb) pb.style.width=pct+'%';
+            if(pl) pl.textContent=pct+'% uploaded…';
+          },
+          reject,
+          async()=>{resolve(await task.snapshot.ref.getDownloadURL());}
+        );
+      });
+    }
+    if(!imageUrl){toast('Please select a file or enter an image URL'); saveBtn.disabled=false; saveBtn.textContent='💾 Save & Go Live'; return;}
+    await ensureFirebaseUser();
+    const doc=await fstore.collection('siteSettings').doc('thumbnails').get();
+    const settings=doc.exists?doc.data():{heroSlides:[],categoryImages:{}};
+    settings.heroSlides=settings.heroSlides||[];
+    settings.categoryImages=settings.categoryImages||{};
+    if(opts.type==='hero'){
+      const title=titleInput?.value?.trim()||'';
+      if(opts.index===-1){
+        settings.heroSlides.push({url:imageUrl,title,order:settings.heroSlides.length,addedAt:new Date().toISOString()});
+      } else {
+        settings.heroSlides[opts.index]={...settings.heroSlides[opts.index],url:imageUrl,title,updatedAt:new Date().toISOString()};
+      }
+    } else {
+      settings.categoryImages[opts.key]={url:imageUrl,updatedAt:new Date().toISOString()};
+      // Live-update the preview in settings page if visible
+      const previewEl=document.getElementById('catPreview_'+opts.key);
+      if(previewEl) previewEl.src=imageUrl;
+    }
+    await fstore.collection('siteSettings').doc('thumbnails').set(settings,{merge:false});
+    toast('✅ Saved! Website updated live.');
+    closeModal();
+    loadThumbSettings();
+  } catch(e){
+    toast('Save failed: '+e.message);
+    saveBtn.disabled=false; saveBtn.textContent='💾 Save & Go Live';
+  }
+}
+
+async function removeHeroSlide(index){
+  if(!confirm('Remove this slide?')) return;
+  await ensureFirebaseUser();
+  const doc=await fstore.collection('siteSettings').doc('thumbnails').get();
+  const settings=doc.exists?doc.data():{heroSlides:[],categoryImages:{}};
+  settings.heroSlides=(settings.heroSlides||[]).filter((_,i)=>i!==index);
+  settings.heroSlides.forEach((s,i)=>s.order=i);
+  await fstore.collection('siteSettings').doc('thumbnails').set(settings,{merge:false});
+  toast('Slide removed ✓');
+  loadThumbSettings();
+}
+
+async function moveHeroSlide(index, dir){
+  await ensureFirebaseUser();
+  const doc=await fstore.collection('siteSettings').doc('thumbnails').get();
+  const settings=doc.exists?doc.data():{heroSlides:[],categoryImages:{}};
+  const slides=settings.heroSlides||[];
+  const newIdx=index+dir;
+  if(newIdx<0||newIdx>=slides.length) return;
+  [slides[index],slides[newIdx]]=[slides[newIdx],slides[index]];
+  slides.forEach((s,i)=>s.order=i);
+  settings.heroSlides=slides;
+  await fstore.collection('siteSettings').doc('thumbnails').set(settings,{merge:false});
+  toast('Slide reordered ✓');
+  loadThumbSettings();
+}
+
 </script>
 </body>
 </html>

@@ -460,6 +460,20 @@
   .app-success-screen p{color:#64748b;font-size:15px;line-height:1.6;}
   @media(max-width:560px){.app-two-col{grid-template-columns:1fr;}.app-modal-body{padding:20px 18px;}.app-modal-header{padding:22px 18px 18px;}}
 
+
+  /* HERO SLIDER */
+  .hero-slider{position:relative;border-radius:20px;overflow:hidden;box-shadow:0 25px 60px rgba(30,58,138,0.2);}
+  .hero-slide{display:none;width:100%;}
+  .hero-slide.active{display:block;animation:slideIn .7s ease;}
+  @keyframes slideIn{from{opacity:0;transform:scale(1.04);}to{opacity:1;transform:scale(1);}}
+  .hero-slide img{width:100%;display:block;border-radius:20px;animation:none!important;}
+  .hero-slider-nav{display:flex;justify-content:center;gap:8px;margin-top:14px;}
+  .hero-dot{width:10px;height:10px;border-radius:50%;background:rgba(30,58,138,.2);cursor:pointer;transition:all .35s;border:none;padding:0;}
+  .hero-dot.active{background:var(--orange);width:28px;border-radius:5px;}
+  .hero-arrows{position:absolute;top:50%;transform:translateY(-50%);width:100%;display:flex;justify-content:space-between;padding:0 10px;pointer-events:none;z-index:2;}
+  .hero-arrow-btn{background:rgba(255,255,255,.88);border:none;border-radius:50%;width:38px;height:38px;cursor:pointer;pointer-events:all;font-size:17px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.15);transition:all .25s;}
+  .hero-arrow-btn:hover{background:var(--orange);color:#fff;}
+
 </style>
 </head>
 <body>
@@ -515,8 +529,19 @@
         <div class="stat-item"><h3>100%</h3><p>Quality</p></div>
       </div>
     </div>
-    <div class="hero-image">
-      <img src="assets/hero-fallback.jpg" alt="Modern Home Solutions">
+    <div class="hero-image" style="position:relative;">
+      <div class="hero-slider" id="heroSlider">
+        <div class="hero-slide active" id="hSlide0">
+          <img src="assets/hero-fallback.jpg" alt="Modern Home Solutions">
+        </div>
+        <div class="hero-arrows">
+          <button class="hero-arrow-btn" onclick="heroArrow(-1)" aria-label="Previous slide">&#8592;</button>
+          <button class="hero-arrow-btn" onclick="heroArrow(1)" aria-label="Next slide">&#8594;</button>
+        </div>
+      </div>
+      <div class="hero-slider-nav" id="heroSliderNav">
+        <button class="hero-dot active" onclick="heroGoTo(0)" aria-label="Slide 1"></button>
+      </div>
       <div class="hero-badge">BEST QUALITY GUARANTEED</div>
     </div>
   </div>
@@ -551,7 +576,7 @@
   </div>
   <div class="products-grid">
     <div class="product-card fade-up">
-      <div class="product-img"><img src="assets/services/pleated-mesh.jpg" alt="Pleated Mesh"></div>
+      <div class="product-img"><img src="assets/services/pleated-mesh.jpg" alt="Pleated Mesh" id="catImg-pleatedMesh"></div>
       <div class="product-info">
         <h3>Pleated Mesh</h3>
         <p>Innovative retractable insect screens that are durable, easy to use, and almost invisible when not in use.</p>
@@ -559,7 +584,7 @@
       </div>
     </div>
     <div class="product-card fade-up">
-      <div class="product-img"><img src="assets/services/honeycomb.jpg" alt="Honeycomb Partition"></div>
+      <div class="product-img"><img src="assets/services/honeycomb.jpg" alt="Honeycomb Partition" id="catImg-honeyComb"></div>
       <div class="product-info">
         <h3>Honey Comb Partition</h3>
         <p>Elegant and functional partitions that provide privacy and thermal insulation with a modern aesthetic.</p>
@@ -567,7 +592,7 @@
       </div>
     </div>
     <div class="product-card fade-up">
-      <div class="product-img"><img src="assets/services/invisible-grill.jpg" alt="Invisible Grill"></div>
+      <div class="product-img"><img src="assets/services/invisible-grill.jpg" alt="Invisible Grill" id="catImg-invisibleGrill"></div>
       <div class="product-info">
         <h3>Invisible Grill</h3>
         <p>High-tensile safety cables that provide maximum protection for balconies and windows without blocking your view.</p>
@@ -575,7 +600,7 @@
       </div>
     </div>
     <div class="product-card fade-up">
-      <div class="product-img"><img src="assets/services/bird-net.jpg" alt="Anti Bird Net"></div>
+      <div class="product-img"><img src="assets/services/bird-net.jpg" alt="Anti Bird Net" id="catImg-antiBirdNet"></div>
       <div class="product-info">
         <h3>Anti Bird Net</h3>
         <p>Durable and aesthetic netting solutions to keep your balconies and premises free from birds and pests.</p>
@@ -1068,6 +1093,80 @@
       btn.disabled = false; btn.innerHTML = original;
     }
   };
+
+
+  // ── Hero Slider ──────────────────────────────────────────────
+  let _heroSlides = [];
+  let _currentSlide = 0;
+  let _sliderTimer = null;
+
+  function initHeroSlider(slides) {
+    if (!slides || !slides.length) return;
+    _heroSlides = slides;
+    const sliderEl = document.getElementById('heroSlider');
+    const navEl    = document.getElementById('heroSliderNav');
+    if (!sliderEl || !navEl) return;
+
+    sliderEl.innerHTML = slides.map((s, i) => `
+      <div class="hero-slide ${i === 0 ? 'active' : ''}" id="hSlide${i}">
+        <img src="${s.url}" alt="${(s.title || 'Home Solution').replace(/"/g,'&quot;')}" loading="${i === 0 ? 'eager' : 'lazy'}">
+      </div>`).join('') + `
+      <div class="hero-arrows">
+        <button class="hero-arrow-btn" onclick="heroArrow(-1)" aria-label="Previous">&#8592;</button>
+        <button class="hero-arrow-btn" onclick="heroArrow(1)" aria-label="Next">&#8594;</button>
+      </div>`;
+
+    navEl.innerHTML = slides.map((_, i) => `
+      <button class="hero-dot ${i === 0 ? 'active' : ''}" onclick="heroGoTo(${i})" aria-label="Slide ${i+1}"></button>`).join('');
+
+    if (_sliderTimer) clearInterval(_sliderTimer);
+    if (slides.length > 1) {
+      _sliderTimer = setInterval(() => heroArrow(1), 4500);
+    }
+  }
+
+  window.heroGoTo = function(idx) {
+    _heroSlides.forEach((_, i) => {
+      const el = document.getElementById('hSlide' + i);
+      if (el) el.classList.toggle('active', i === idx);
+    });
+    document.querySelectorAll('#heroSliderNav .hero-dot').forEach((d, i) =>
+      d.classList.toggle('active', i === idx));
+    _currentSlide = idx;
+  };
+
+  window.heroArrow = function(dir) {
+    if (!_heroSlides.length) return;
+    heroGoTo((_currentSlide + dir + _heroSlides.length) % _heroSlides.length);
+  };
+
+  // ── Site Settings (thumbnails) listener ─────────────────────
+  db.collection('siteSettings').doc('thumbnails').onSnapshot(doc => {
+    if (!doc.exists) return;
+    const data = doc.data();
+
+    // Hero slider
+    if (data.heroSlides && data.heroSlides.length) {
+      const sorted = [...data.heroSlides].sort((a, b) => (a.order || 0) - (b.order || 0));
+      initHeroSlider(sorted);
+    }
+
+    // Category images
+    const catMap = {
+      pleatedMesh:    'catImg-pleatedMesh',
+      honeyComb:      'catImg-honeyComb',
+      invisibleGrill: 'catImg-invisibleGrill',
+      antiBirdNet:    'catImg-antiBirdNet'
+    };
+    if (data.categoryImages) {
+      Object.entries(catMap).forEach(([key, elId]) => {
+        if (data.categoryImages[key]?.url) {
+          const el = document.getElementById(elId);
+          if (el) el.src = data.categoryImages[key].url;
+        }
+      });
+    }
+  }, err => console.warn('siteSettings error:', err.message));
 
   window.addEventListener('scroll',()=>{
     const nav = document.querySelector('.navbar');
