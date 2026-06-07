@@ -582,6 +582,41 @@
     .feature-icon {
       display: none; /* Hide icons in accordion to keep it clean */
     }
+
+    /* Review Form Accordion for Mobile */
+    .review-form {
+      padding: 15px;
+      cursor: pointer;
+      position: relative;
+    }
+    .review-form h3 {
+      margin: 0 !important;
+      font-size: 15px !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      text-align: left !important;
+    }
+    .review-form h3::after {
+      content: '▼';
+      font-size: 10px;
+      margin-left: auto;
+      transition: transform 0.3s;
+    }
+    .review-form.active h3::after {
+      transform: rotate(180deg);
+    }
+    .review-form form {
+      max-height: 0;
+      overflow: hidden;
+      margin: 0;
+      transition: max-height 0.4s ease, margin 0.4s ease;
+    }
+    .review-form.active form {
+      max-height: 1000px; /* Large enough to show form */
+      margin-top: 20px;
+    }
   }
 
   .fade-up{opacity:0;transform:translateY(30px);transition:all .8s ease;}
@@ -1209,6 +1244,17 @@
       }
     });
   });
+
+  // Review Form Accordion Toggle for Mobile
+  const reviewFormCard = document.querySelector('.review-form');
+  if (reviewFormCard) {
+    reviewFormCard.addEventListener('click', (e) => {
+      // Don't toggle if clicking inside the form fields
+      if (window.innerWidth <= 600 && !e.target.closest('form')) {
+        reviewFormCard.classList.toggle('active');
+      }
+    });
+  }
 
   // Mobile Nav
   const hamburger = document.getElementById('hamburger');
