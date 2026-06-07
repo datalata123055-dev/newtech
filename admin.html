@@ -336,7 +336,7 @@ async function login(email, password){
   try {
     const cred = await fbAuth.signInWithEmailAndPassword(email, password);
     const name = cred.user.displayName || cred.user.email.split('@')[0];
-    const role = 'Super Admin';
+    const role = roleMap[cred.user.email] || 'Super Admin';
     state.session = {id:cred.user.uid, name, email:cred.user.email, role, provider:'firebase'};
     return true;
   } catch(err) {
@@ -1168,7 +1168,7 @@ async function muSave(id) {
     saveBtn.textContent = id ? '💾 Save Changes' : '🚀 Upload & Publish to Site';
   }
 }
-
+</script>
 
 <!-- REVIEWS MANAGEMENT MODULE -->
 <div class="module" id="reviewsModule" style="display:none;">
@@ -1204,7 +1204,7 @@ async function muSave(id) {
   </div>
 </div>
 
-
+<script>
   // Review management functions
   function renderReviewsModule() {
     const reviews = db['reviews'] || [];
