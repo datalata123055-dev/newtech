@@ -101,28 +101,16 @@ const permissions = {
   'Moderator':    ['leads','quotes','careers','jobs','media']
 };
 // Role map for Firebase Auth users (email → role)
+// Add your admin emails here
 const roleMap = {
-  'super@newtech.test':    'Super Admin',
-  'company@newtech.test':  'Company Admin',
-  'editor@newtech.test':   'Editor',
-  'moderator@newtech.test':'Moderator',
   'homesolutionsnewtech@gmail.com': 'Super Admin'
 };
-// Demo accounts fallback (works without Firebase Auth setup)
-const demoAccounts = [
-  {id:'u1',name:'Sofia Admin',      email:'super@newtech.test',     password:'Admin@12345',role:'Super Admin',   status:'active'},
-  {id:'u2',name:'Carl Company',     email:'company@newtech.test',   password:'Admin@12345',role:'Company Admin', status:'active'},
-  {id:'u3',name:'Esha Editor',      email:'editor@newtech.test',    password:'Admin@12345',role:'Editor',        status:'active'},
-  {id:'u4',name:'Mina Moderator',   email:'moderator@newtech.test', password:'Admin@12345',role:'Moderator',     status:'active'}
-];
-
 // ─── Schemas ──────────────────────────────────────────────────────
 const schemas = {
   users:{
     label:'Users',singular:'User',icon:'👥',roles:['Super Admin'],firestore:false,
     fields:[['name','Name','text'],['email','Email','email'],['role','Role','select',['Super Admin','Company Admin','Editor','Moderator']],['status','Status','select',['active','inactive']]],
-    seed:demoAccounts.map(({password,...u})=>u)
-  },
+    seed:[]},
   leads:{
     label:'Leads Manager',singular:'Lead',icon:'📥',roles:['Super Admin','Company Admin','Editor'],firestore:true,
     fields:[['name','Customer Name','text'],['phone','Phone','tel'],['email','Email','email'],['service','Service','text'],['status','Status','select',['new','contacted','closed','junk']],['message','Message','textarea']],
@@ -260,26 +248,17 @@ function log(action,type='activity'){/* activity logging removed */}
 
 async function login(email, password){
   const btn = document.getElementById('loginBtn');
-  if(btn){ btn.textContent='Signing in…'; btn.disabled=true; }
-
-  // Try Firebase Auth first
+  btn.textContent='Signing in…'; btn.disabled=true;
   try {
     const cred = await fbAuth.signInWithEmailAndPassword(email, password);
-    const role = roleMap[cred.user.email] || 'Super Admin';
     const name = cred.user.displayName || cred.user.email.split('@')[0];
+    const role = 'Super Admin';
     state.session = {id:cred.user.uid, name, email:cred.user.email, role, provider:'firebase'};
-    sessionStorage.setItem('newtech-session', JSON.stringify(state.session));
     return true;
-  } catch(firebaseErr){
-    // Fallback: demo accounts
-    const account = demoAccounts.find(a=>a.email.toLowerCase()===email.toLowerCase()&&a.password===password&&a.status==='active');
-    if(!account){
-      if(btn){ btn.textContent='Sign in securely'; btn.disabled=false; }
-      return false;
-    }
-    state.session = {id:account.id, name:account.name, email:account.email, role:account.role, provider:'demo'};
-    sessionStorage.setItem('newtech-session', JSON.stringify(state.session));
-    return true;
+  } catch(err) {
+    toast('Login failed: ' + (err.message || 'Invalid email or password'));
+    btn.textContent='Sign in securely'; btn.disabled=false;
+    return false;
   }
 }
 
@@ -296,15 +275,7 @@ function boot(){
       showApp();
     }
   });
-  // Check demo session
-  const session = sessionStorage.getItem('newtech-session');
-  if(session && !state.session){
-    state.session = JSON.parse(session);
-    showApp();
-  } else if(!state.session){
-    showLogin();
   }
-}
 
 function showLogin(){document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('appShell').classList.add('hidden');}
 function showApp(){
