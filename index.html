@@ -617,6 +617,39 @@
       max-height: 1000px; /* Large enough to show form */
       margin-top: 20px;
     }
+
+    /* Careers Accordion for Mobile */
+    .job-card-mobile {
+      padding: 15px !important;
+      cursor: pointer;
+    }
+    .job-header-mobile {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+    .job-header-mobile h3 {
+      font-size: 15px !important;
+      margin: 0 !important;
+    }
+    .job-header-mobile::after {
+      content: '▼';
+      font-size: 10px;
+      transition: transform 0.3s;
+    }
+    .job-card-mobile.active .job-header-mobile::after {
+      transform: rotate(180deg);
+    }
+    .job-content-mobile {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, margin 0.3s ease;
+    }
+    .job-card-mobile.active .job-content-mobile {
+      max-height: 500px;
+      margin-top: 15px;
+    }
   }
 
   .fade-up{opacity:0;transform:translateY(30px);transition:all .8s ease;}
@@ -1452,6 +1485,24 @@
     }
     grid.innerHTML = snap.docs.map(doc => {
       const job = doc.data();
+      const isMobile = window.innerWidth <= 600;
+      if (isMobile) {
+        return `
+          <div class="card fade-up visible job-card-mobile" onclick="this.classList.toggle('active')" style="background: white; border-radius: 15px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+            <div class="job-header-mobile">
+              <h3 style="color: #1e3a8a;">${escapeHtml(job.title)}</h3>
+            </div>
+            <div class="job-content-mobile">
+              <span style="background:#e0f2fe; color:#0369a1; padding:4px 12px; border-radius:999px; font-size:11px; font-weight:600; display:inline-block; margin-bottom:10px;">${escapeHtml(job.department)}</span>
+              <p style="color: #64748b; font-size: 13px; line-height: 1.6; margin-bottom: 15px;">${escapeHtml(job.description)}</p>
+              <div style="display:flex; justify-content:space-between; align-items:center; border-top: 1px solid #f1f5f9; padding-top: 12px;">
+                <span style="font-size: 11px; color: #94a3b8;">Expires: ${escapeHtml(job.expiryDate)}</span>
+                <button class="btn-primary" data-title="${escapeAttr(job.title)}" onclick="event.stopPropagation(); openJobForm(this.dataset.title)" style="padding: 8px 16px; font-size: 12px; border:none; cursor:pointer; border-radius:8px;">Apply Now</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
       return `
         <div class="card fade-up visible" style="background: white; padding: 30px; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
           <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:20px;">
