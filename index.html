@@ -752,11 +752,12 @@
   const staticGalleryHTML = document.getElementById('galleryGrid').innerHTML;
 
   db.collection('media')
-    .where('status', '==', 'active')
     .orderBy('createdAt', 'desc')
     .onSnapshot(snap => {
       const grid = document.getElementById('galleryGrid');
-      const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(i => i.url);
+      // Filter client-side — avoids need for a Firestore composite index
+      const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(i => i.url && i.status === 'active');
 
       if (!items.length) {
         // No Firebase media — keep static showcase images

@@ -838,20 +838,25 @@ async function muSave(id) {
       db['media'][i] = updated;
     } else {
       const newRec = { id: uid(), ...obj, createdAt: new Date().toISOString() };
-      try {
-        const liveId = await fsCreate('media', newRec);
-        newRec.id = liveId || newRec.id;
-      } catch(fsErr) {
-        // Firestore write failed — show actionable error
-        const msg = fsErr.code === 'permission-denied'
-          ? '🔒 Firestore permission denied. Please update your Firestore security rules to allow authenticated writes to the "media" collection.'
-          : ('Firestore save failed: ' + fsErr.message);
-        toast(msg, 8000);
-        saveBtn.disabled = false;
-        saveBtn.textContent = id ? '💾 Save Changes' : '🚀 Upload & Publish to Site';
-        return;
+      const useFirestore = schemas['media']?.firestore;
+      if (useFirestore) {
+        try {
+          await fsCreate('media', newRec);
+          // ✅ onSnapshot listener will automatically update db['media']
+          // Do NOT manually unshift — that causes duplicates
+        } catch(fsErr) {
+          const msg = fsErr.code === 'permission-denied'
+            ? '🔒 Firestore permission denied. Update Firestore rules to allow authenticated writes to "media".'
+            : ('Firestore save failed: ' + fsErr.message);
+          toast(msg, 8000);
+          saveBtn.disabled = false;
+          saveBtn.textContent = id ? '💾 Save Changes' : '🚀 Upload & Publish to Site';
+          return;
+        }
+      } else {
+        // No Firestore — manage locally
+        db['media'].unshift(newRec);
       }
-      db['media'].unshift(newRec);
     }
     save(); closeModal(); renderContent(); _muFile = null;
     toast(status === 'active'
