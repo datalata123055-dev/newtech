@@ -488,7 +488,7 @@ function filteredRows(key){
 function tableHtml(key,cols,rows){
   return `<div class="table-wrap"><table>
     <thead><tr><th><input type="checkbox" onchange="toggleAll('${key}',this.checked)"></th>${cols.map(c=>`<th>${c[1]}</th>`).join('')}<th>Actions</th></tr></thead>
-    <tbody>${rows.map(r=>`<tr><td><input type="checkbox" ${state.selected.has(r.id)?'checked':''} onchange="toggleOne('${r.id}',this.checked)"></td>${cols.map(c=>`<td>${formatCell(r[c[0]])}</td>`).join('')}<td>${key==='careers'?`<button class="icon-btn" style="color:#0369a1;border-color:#7dd3fc;" onclick="viewCareer('${r.id}')">👁 View</button> <button class="icon-btn" style="color:#059669;border-color:#6ee7b7;" onclick="replyToApplicant('${r.email}','${r.name}')">✉ Reply</button>`:`<button class="icon-btn" onclick="openForm('${key}','${r.id}')">Edit</button>`} <button class="icon-btn" onclick="confirmDelete('${key}','${r.id}')">Delete</button></td></tr>`).join('')||`<tr><td colspan="${cols.length+2}" class="empty">No records found.</td></tr>`}
+    <tbody>${rows.map(r=>`<tr><td><input type="checkbox" ${state.selected.has(r.id)?'checked':''} onchange="toggleOne('${r.id}',this.checked)"></td>${cols.map(c=>`<td>${formatCell(r[c[0]])}</td>`).join('')}<td>${key==='careers'?`<button class="icon-btn" style="color:#0369a1;border-color:#7dd3fc;" onclick="viewCareer('${r.id}')">👁 View</button> <button class="icon-btn" style="color:#059669;border-color:#6ee7b7;" onclick="replyToApplicant('${r.email}','${r.name}')">✉ Reply</button>`:key==='quotes'?`<button class="icon-btn" style="color:#0369a1;border-color:#7dd3fc;" onclick="viewQuote('${r.id}')">👁 View</button> <button class="icon-btn" style="color:#059669;border-color:#6ee7b7;" onclick="replyToApplicant('${r.email}','${r.name}')">✉ Reply</button>`:`<button class="icon-btn" onclick="openForm('${key}','${r.id}')">Edit</button>`} <button class="icon-btn" onclick="confirmDelete('${key}','${r.id}')">Delete</button></td></tr>`).join('')||`<tr><td colspan="${cols.length+2}" class="empty">No records found.</td></tr>`}
     </tbody></table></div>`;
 }
 
@@ -524,6 +524,48 @@ function viewCareer(id){
       <p class="hint" style="margin:0">Applied on: ${r.createdAt ? new Date(r.createdAt).toLocaleString() : 'Unknown'}</p>
     </div>
   </div>`;
+}
+
+function viewQuote(id){
+  const r = (db['quotes']||[]).find(r=>r.id===id);
+  if(!r){toast('Quote request not found');return;}
+  document.getElementById('modal').classList.remove('hidden');
+  document.getElementById('modal').innerHTML=`<div class="modal-card" style="max-width:620px">
+    <div class="modal-head">
+      <div><h2>👁 View Quote Request</h2><p class="muted">Customer Quote Request — Read Only</p></div>
+      <button class="icon-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div style="display:grid;gap:14px;margin-top:18px">
+      <div class="field"><label>Customer Name</label><input type="text" value="${escapeAttr(r.name||'')}" readonly style="background:var(--bg);cursor:default"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Email</label><input type="text" value="${escapeAttr(r.email||'')}" readonly style="background:var(--bg);cursor:default"></div>
+        <div class="field"><label>Phone</label><input type="text" value="${escapeAttr(r.phone||'')}" readonly style="background:var(--bg);cursor:default"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Service Required</label><input type="text" value="${escapeAttr(r.service||'')}" readonly style="background:var(--bg);cursor:default"></div>
+        <div class="field"><label>Location</label><input type="text" value="${escapeAttr(r.location||'')}" readonly style="background:var(--bg);cursor:default"></div>
+      </div>
+      <div class="field"><label>Status</label><div style="margin-top:4px"><span class="badge ${escapeHtml(r.status||'')}">${escapeHtml(r.status||'')}</span></div></div>
+      <div class="field" style="grid-column:1/-1"><label>Requirements / Message</label><textarea readonly style="background:var(--bg);cursor:default;min-height:100px;width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px">${escapeHtml(r.message||'(No requirements provided)')}</textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
+        <button class="btn btn-navy" onclick="replyToApplicant('${escapeAttr(r.email||'')}','${escapeAttr(r.name||'')}')">✉ Reply via Email</button>
+        <div>
+          <label style="font-size:12px;font-weight:700;display:block;margin-bottom:6px;color:var(--muted)">Update Status</label>
+          <select onchange="updateQuoteStatus('${r.id}',this.value)" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--card);color:var(--ink);font-weight:700">
+            ${['new','in-progress','quoted','closed'].map(s=>`<option ${r.status===s?'selected':''} value="${s}">${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <p class="hint" style="margin:0">Requested on: ${r.createdAt ? new Date(r.createdAt).toLocaleString() : 'Unknown'}</p>
+    </div>
+  </div>`;
+}
+
+function updateQuoteStatus(id,status){
+  firebase.firestore().collection('quotes').doc(id).update({status}).then(()=>{
+    toast('Quote status updated');
+    render();
+  });
 }
 
 function replyToApplicant(email, name){
