@@ -510,6 +510,78 @@
     .section-header { margin-bottom: 30px; }
     .section-header h2 { font-size: 26px; }
     .section-header p { font-size: 14px; }
+
+    /* Expertise Grid for Mobile */
+    .products-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .product-card {
+      border-radius: 12px;
+    }
+    .product-img {
+      height: 120px;
+    }
+    .product-info {
+      padding: 12px;
+    }
+    .product-info h3 {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .product-info p {
+      display: none; /* Hide description on mobile grid to save space */
+    }
+    .product-link {
+      font-size: 11px;
+    }
+
+    /* Features Accordion for Mobile */
+    .features-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .feature-card {
+      padding: 15px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      cursor: pointer;
+      position: relative;
+    }
+    .feature-card h3 {
+      margin: 0;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+    .feature-card h3::after {
+      content: '▼';
+      font-size: 10px;
+      margin-left: auto;
+      transition: transform 0.3s;
+    }
+    .feature-card.active h3::after {
+      transform: rotate(180deg);
+    }
+    .feature-card p {
+      max-height: 0;
+      overflow: hidden;
+      margin: 0;
+      transition: max-height 0.3s ease, margin 0.3s ease;
+      font-size: 13px;
+    }
+    .feature-card.active p {
+      max-height: 100px;
+      margin-top: 10px;
+    }
+    .feature-icon {
+      display: none; /* Hide icons in accordion to keep it clean */
+    }
   }
 
   .fade-up{opacity:0;transform:translateY(30px);transition:all .8s ease;}
@@ -1128,6 +1200,15 @@
   }, observerOptions);
 
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // Features Accordion Toggle for Mobile
+  document.querySelectorAll('.feature-card').forEach(card => {
+    card.addEventListener('click', () => {
+      if (window.innerWidth <= 600) {
+        card.classList.toggle('active');
+      }
+    });
+  });
 
   // Mobile Nav
   const hamburger = document.getElementById('hamburger');
