@@ -958,6 +958,12 @@
 <script src="firebase-config.js"></script>
 
 <script>
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+  const storage = firebase.storage();
+
   // Intersection Observer for fade-up animation
   const observerOptions = { threshold: 0.1 };
   const observer = new IntersectionObserver((entries) => {
