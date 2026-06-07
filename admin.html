@@ -258,16 +258,15 @@ function updateSyncBadge(ok){
 }
 
 async function fsCreate(key, obj){
-  if(!schemas[key]?.firestore) return;
+  if(!schemas[key]?.firestore) return null;
   await ensureFirebaseUser();
-  try {
-    const {id, upload, ...firestoreObj} = obj;
-    const docRef = await fstore.collection(key).add({...firestoreObj, createdAt: obj.createdAt || new Date().toISOString()});
-    // Update local id to match Firestore id
-    const idx = db[key].findIndex(r=>r.id===obj.id);
-    if(idx>-1) db[key][idx].id = docRef.id;
-    save();
-  } catch(e){ console.warn('Firestore create failed:', e.message); }
+  // Throws on failure — caller must handle
+  const {id, upload, ...firestoreObj} = obj;
+  const docRef = await fstore.collection(key).add({...firestoreObj, createdAt: obj.createdAt || new Date().toISOString()});
+  const idx = db[key].findIndex(r=>r.id===obj.id);
+  if(idx>-1) db[key][idx].id = docRef.id;
+  save();
+  return docRef.id;
 }
 
 async function fsUpdate(key, id, obj){
@@ -285,7 +284,7 @@ async function fsDelete(key, id){
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────
-function toast(msg){const el=document.createElement('div');el.className='toast';el.textContent=msg;document.getElementById('toastWrap').appendChild(el);setTimeout(()=>el.remove(),3200);}
+function toast(msg,dur=3200){const el=document.createElement('div');el.className='toast';el.textContent=msg;document.getElementById('toastWrap').appendChild(el);setTimeout(()=>el.remove(),dur);}
 function log(action,type='activity'){/* activity logging removed */}
 
 async function login(email, password){
@@ -839,8 +838,19 @@ async function muSave(id) {
       db['media'][i] = updated;
     } else {
       const newRec = { id: uid(), ...obj, createdAt: new Date().toISOString() };
-      const liveId = await fsCreate('media', newRec);
-      newRec.id = liveId || newRec.id;
+      try {
+        const liveId = await fsCreate('media', newRec);
+        newRec.id = liveId || newRec.id;
+      } catch(fsErr) {
+        // Firestore write failed — show actionable error
+        const msg = fsErr.code === 'permission-denied'
+          ? '🔒 Firestore permission denied. Please update your Firestore security rules to allow authenticated writes to the "media" collection.'
+          : ('Firestore save failed: ' + fsErr.message);
+        toast(msg, 8000);
+        saveBtn.disabled = false;
+        saveBtn.textContent = id ? '💾 Save Changes' : '🚀 Upload & Publish to Site';
+        return;
+      }
       db['media'].unshift(newRec);
     }
     save(); closeModal(); renderContent(); _muFile = null;
