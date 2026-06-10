@@ -675,10 +675,10 @@
       margin-top: 14px;
     }
     .acc-item {
-      border: 1px solid #e87722;
+      border: 1.5px solid #e87722;
       border-radius: 20px;
       overflow: hidden;
-      background: rgba(232, 119, 34, 0.08);
+      background: rgba(232, 119, 34, 0.1);
       box-shadow: none;
       margin: 0;
     }
@@ -686,11 +686,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 0;
       padding: 10px 10px;
       font-size: 11px;
       font-weight: 600;
-      color: #1a2e4a;
+      color: #e87722;
       cursor: pointer;
       list-style: none;
       position: relative;
@@ -698,17 +698,18 @@
     }
     .acc-item summary::-webkit-details-marker { display: none; }
     .acc-item summary::after { display: none; }
-    .acc-icon { font-size: 14px; flex-shrink: 0; }
+    .acc-icon { display: none; }
     .acc-item p {
       margin: 0;
       padding: 0 12px 10px 12px;
       font-size: 11px;
-      color: #555;
+      color: #e87722;
       line-height: 1.5;
       text-align: center;
     }
     .acc-item[open] {
-      background: rgba(232, 119, 34, 0.15);
+      background: rgba(232, 119, 34, 0.2);
+      border-color: #e87722;
     }
 
     /* ── Compact Hero & About for Mobile ────────────────────────── */
