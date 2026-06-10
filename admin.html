@@ -793,7 +793,7 @@ const COMPANY_PROFILE = {
   address:'F-1, Hari Nagar II, Near Eco Park, South Delhi, Delhi, India',
   contacts:['+91 9315739299','+91 9354831931'],
   email:'homesolutionsnewtech@gmail.com',
-  website:location.origin ? location.origin + location.pathname.replace('admin.html','index.html') : 'index.html',
+  website:'',
   gstNumber:'GSTIN: To be updated',
   terms:['Quotation is valid for 15 days from the quotation date.','Final billing may vary after site verification and exact measurements.','Order processing starts after customer approval and advance payment.','Electrical, civil, scaffolding or access work is excluded unless mentioned.'],
   warranty:['Product warranty applies as per selected material and manufacturer terms.','Warranty covers manufacturing defects only; misuse, physical damage and site modifications are excluded.','Installation service warranty applies to workmanship subject to normal usage.']
@@ -802,7 +802,7 @@ const QUOTE_CATEGORIES = ['Roller Blinds','Zebra Blinds','Wooden Blinds','Printe
 const QUOTE_UNITS = ['Sq Ft','Sq Meter','CM','MM'];
 const TAX_OPTIONS = [{label:'No Tax',value:0},{label:'GST 5%',value:5},{label:'GST 12%',value:12},{label:'GST 18%',value:18},{label:'Custom Tax',value:'custom'}];
 
-function currency(n){return '₹' + Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});}
+function currency(n){return 'Rs. ' + Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});}
 function num(v){return Number(v||0)||0;}
 function todayISO(){return new Date().toISOString().slice(0,10);}
 function generateQuotationNumber(){
@@ -922,12 +922,81 @@ async function duplicateQuotation(id){const q=(db.quotations||[]).find(x=>x.id==
 function getQuotation(id){return calculateQuotation((db.quotations||[]).find(q=>q.id===id)||quotationFromForm());}
 function buildQuotationPdf(q){
   const jsPDF = window.jspdf?.jsPDF; if(!jsPDF){toast('PDF library is still loading. Please try again.');return null;}
-  const doc=new jsPDF({unit:'pt',format:'a4'}); const W=595; let y=36; try{const logoImg=document.querySelector('img[src="assets/logo.png"]'); if(logoImg?.complete) doc.addImage(logoImg,'PNG',36,30,48,48); else {doc.setFillColor(30,58,138); doc.roundedRect(36,30,48,48,8,8,'F'); doc.setTextColor(255); doc.setFontSize(10); doc.text('NTHS',60,58,{align:'center'});}}catch(e){doc.setFillColor(30,58,138); doc.roundedRect(36,30,48,48,8,8,'F'); doc.setTextColor(255); doc.setFontSize(10); doc.text('NTHS',60,58,{align:'center'});} doc.setFont('helvetica','bold'); doc.setTextColor(30,58,138); doc.setFontSize(18); doc.text(COMPANY_PROFILE.name,100,y+12); doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(80); doc.text(COMPANY_PROFILE.address,100,y+28,{maxWidth:300}); doc.text(COMPANY_PROFILE.contacts.join(' / ')+' | '+COMPANY_PROFILE.email,100,y+52); doc.text(COMPANY_PROFILE.website,100,y+66); doc.setDrawColor(249,115,22); doc.setLineWidth(3); doc.line(36,112,W-36,112); doc.setFont('helvetica','bold'); doc.setFontSize(20); doc.setTextColor(249,115,22); doc.text('QUOTATION',W-36,50,{align:'right'}); doc.setFontSize(10); doc.setTextColor(30,58,138); doc.text(q.quotationNumber||'',W-36,70,{align:'right'}); doc.text('Date: '+(q.quotationDate||todayISO()),W-36,86,{align:'right'}); y=136;
-  doc.setFontSize(11); doc.text('Customer Details',36,y); doc.text('Company / GST Details',330,y); doc.setFont('helvetica','normal'); doc.setTextColor(60); y+=18; const c=q.customerDetails||{}; doc.text([c.name||'Customer',c.phone||'',c.email||'',c.installationAddress||'', [c.city,c.state,c.country].filter(Boolean).join(', ')].filter(Boolean),36,y,{maxWidth:240}); doc.text([COMPANY_PROFILE.name,COMPANY_PROFILE.gstNumber,'Email: '+COMPANY_PROFILE.email,'Phone: '+COMPANY_PROFILE.contacts.join(', ')],330,y,{maxWidth:220}); y+=92;
-  doc.setFont('helvetica','bold'); doc.setTextColor(30,58,138); doc.text('Products, Measurements, Rates and Amounts',36,y); y+=14; doc.setFillColor(30,58,138); doc.rect(36,y,W-72,22,'F'); doc.setTextColor(255); doc.setFontSize(8); ['Product','Measurement','Qty','Rate/sq ft','Install','Delivery','Disc','Amount'].forEach((h,i)=>doc.text(h,[42,160,238,276,334,382,436,482][i],y+14)); y+=26; doc.setTextColor(40); doc.setFont('helvetica','normal');
-  q.products.forEach((it,idx)=>{ if(y>690){doc.addPage(); y=40;} doc.text(`${idx+1}. ${it.category} - ${it.productName||'Custom product'}`,42,y,{maxWidth:110}); doc.text(`${it.width} x ${it.height} ${it.unit}\n${it.areaSqFt.toFixed(2)} sq ft`,160,y,{maxWidth:70}); doc.text(String(it.quantity),238,y); doc.text(currency(it.rateSqFt || (it.rateSqMeter/10.7639)),276,y); doc.text(currency(it.installationCharge),334,y); doc.text(currency(it.deliveryCharge),382,y); doc.text(currency(it.discount),436,y); doc.text(currency(it.lineTotal),482,y); y+=34; });
-  y+=10; const sx=360; doc.setFont('helvetica','bold'); [['Subtotal',q.subtotal],['Discount',-q.discount],[`GST (${q.taxRate}%)`,q.tax],['Grand Total',q.total]].forEach(([l,v],i)=>{doc.setTextColor(i===3?249:30,i===3?115:58,i===3?22:138); doc.text(l,sx,y); doc.text(currency(v),W-36,y,{align:'right'}); y+=18;});
-  y+=18; doc.setTextColor(30,58,138); doc.text('Terms & Conditions',36,y); y+=14; doc.setFont('helvetica','normal'); doc.setTextColor(70); doc.text(COMPANY_PROFILE.terms.map((t,i)=>`${i+1}. ${t}`),36,y,{maxWidth:245}); doc.setFont('helvetica','bold'); doc.setTextColor(30,58,138); doc.text('Warranty Information',330,y-14); doc.setFont('helvetica','normal'); doc.setTextColor(70); doc.text(COMPANY_PROFILE.warranty.map((t,i)=>`${i+1}. ${t}`),330,y,{maxWidth:220}); y=760; doc.setDrawColor(180); doc.line(36,y,W-36,y); doc.text('Authorized Signature',60,y+24); doc.text('Company Stamp',390,y+24); return doc;
+  const doc=new jsPDF({unit:'pt',format:'a4'});
+  const W=595, H=842, M=36;
+  const blue=[30,58,138], orange=[249,115,22], text=[55,65,81];
+  const setBlue=()=>doc.setTextColor(...blue), setOrange=()=>doc.setTextColor(...orange), setText=()=>doc.setTextColor(...text);
+  const money=v=>currency(v);
+  const addFooter=()=>{
+    doc.setDrawColor(180); doc.setLineWidth(1); doc.line(M,H-72,W-M,H-72);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); setText();
+    doc.text('Authorized Signature',60,H-46);
+    doc.text('Company Stamp',390,H-46);
+  };
+  let y=34;
+  try{
+    const logoImg=document.querySelector('img[src="assets/logo.png"]');
+    if(logoImg?.complete) doc.addImage(logoImg,'PNG',M,30,56,45);
+    else {doc.setFillColor(...blue); doc.roundedRect(M,30,56,45,8,8,'F'); doc.setTextColor(255); doc.setFontSize(10); doc.text('NTHS',64,56,{align:'center'});}
+  }catch(e){doc.setFillColor(...blue); doc.roundedRect(M,30,56,45,8,8,'F'); doc.setTextColor(255); doc.setFontSize(10); doc.text('NTHS',64,56,{align:'center'});}
+  doc.setFont('helvetica','bold'); doc.setFontSize(18); setBlue(); doc.text(COMPANY_PROFILE.name,104,y+14);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); setText();
+  doc.text(COMPANY_PROFILE.address,104,y+32,{maxWidth:300});
+  doc.text(COMPANY_PROFILE.contacts.join(' / ')+' | '+COMPANY_PROFILE.email,104,y+58,{maxWidth:330});
+  doc.setFont('helvetica','bold'); doc.setFontSize(20); setOrange(); doc.text('QUOTATION',W-M,50,{align:'right'});
+  doc.setFontSize(10); setBlue(); doc.text(q.quotationNumber||'',W-M,70,{align:'right'}); doc.text('Date: '+(q.quotationDate||todayISO()),W-M,86,{align:'right'});
+  doc.setDrawColor(...orange); doc.setLineWidth(3); doc.line(M,112,W-M,112); y=136;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); setBlue(); doc.text('Customer Details',M,y); doc.text('Company / GST Details',330,y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); setText(); y+=18;
+  const c=q.customerDetails||{};
+  doc.text([c.name||'Customer',c.phone||'',c.email||'',c.installationAddress||'', [c.city,c.state,c.country].filter(Boolean).join(', ')].filter(Boolean),M,y,{maxWidth:245,lineHeightFactor:1.15});
+  doc.text([COMPANY_PROFILE.name,COMPANY_PROFILE.gstNumber,'Email: '+COMPANY_PROFILE.email,'Phone: '+COMPANY_PROFILE.contacts.join(', ')],330,y,{maxWidth:225,lineHeightFactor:1.15});
+  y+=112;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); setBlue(); doc.text('Products, Measurements, Rates and Amounts',M,y); y+=18;
+  const cols=[
+    {h:'Product',x:42,w:130},{h:'Measurement',x:184,w:74},{h:'Qty',x:268,w:24},{h:'Rate / Sq Ft',x:304,w:54},
+    {h:'Install',x:366,w:46},{h:'Delivery',x:420,w:48},{h:'Disc.',x:474,w:38},{h:'Amount',x:552,w:0,align:'right'}
+  ];
+  doc.setFillColor(...blue); doc.rect(M,y,W-(M*2),24,'F');
+  doc.setTextColor(255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  cols.forEach(c=>doc.text(c.h,c.x,y+15,c.align?{align:c.align}:undefined)); y+=30;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); setText();
+  (q.products||[]).forEach((it,idx)=>{
+    const productLines=doc.splitTextToSize(`${idx+1}. ${it.category} - ${it.productName||'Custom product'}`,130);
+    const measureLines=doc.splitTextToSize(`${it.width} x ${it.height} ${it.unit}\n${it.areaSqFt.toFixed(2)} sq ft / ${it.areaSqMeter.toFixed(2)} sq m`,74);
+    const noteLines=it.notes ? doc.splitTextToSize('Note: '+it.notes,420) : [];
+    const rowH=Math.max(40, Math.max(productLines.length, measureLines.length)*10 + (noteLines.length?noteLines.length*9+6:0) + 8);
+    if(y+rowH>650){addFooter(); doc.addPage(); y=42; doc.setFillColor(...blue); doc.rect(M,y,W-(M*2),24,'F'); doc.setTextColor(255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5); cols.forEach(c=>doc.text(c.h,c.x,y+15,c.align?{align:c.align}:undefined)); y+=30; doc.setFont('helvetica','normal'); doc.setFontSize(8); setText();}
+    doc.setDrawColor(226,232,240); doc.line(M,y-6,W-M,y-6);
+    doc.text(productLines,42,y,{lineHeightFactor:1.15});
+    doc.text(measureLines,184,y,{lineHeightFactor:1.15});
+    doc.text(String(it.quantity),268,y);
+    doc.text(money(it.rateSqFt || (it.rateSqMeter/10.7639)),304,y,{maxWidth:58});
+    doc.text(money(it.installationCharge),366,y,{maxWidth:46});
+    doc.text(money(it.deliveryCharge),420,y,{maxWidth:48});
+    doc.text(money(it.discount),474,y,{maxWidth:38});
+    doc.setFont('helvetica','bold'); doc.text(money(it.lineTotal),W-M,y,{align:'right'}); doc.setFont('helvetica','normal');
+    if(noteLines.length){doc.setFontSize(7.5); doc.text(noteLines,42,y+Math.max(productLines.length,measureLines.length)*10+8,{lineHeightFactor:1.1}); doc.setFontSize(8);}
+    y+=rowH;
+  });
+
+  y+=12;
+  if(y>610){addFooter(); doc.addPage(); y=52;}
+  const sx=350; doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  [['Subtotal',q.subtotal],['Discount',-q.discount],[`GST (${q.taxRate}%)`,q.tax],['Grand Total',q.total]].forEach(([l,v],i)=>{
+    i===3?setOrange():setBlue(); doc.text(l,sx,y); doc.text(money(v),W-M,y,{align:'right'}); y+=20;
+  });
+
+  y+=14;
+  if(y>660){addFooter(); doc.addPage(); y=52;}
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); setBlue(); doc.text('Terms & Conditions',M,y); doc.text('Warranty Information',330,y); y+=14;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); setText();
+  doc.text(COMPANY_PROFILE.terms.map((t,i)=>`${i+1}. ${t}`),M,y,{maxWidth:245,lineHeightFactor:1.15});
+  doc.text(COMPANY_PROFILE.warranty.map((t,i)=>`${i+1}. ${t}`),330,y,{maxWidth:225,lineHeightFactor:1.15});
+  addFooter();
+  return doc;
 }
 function downloadQuotationPdf(id){const q=getQuotation(id); const doc=buildQuotationPdf(q); if(doc) doc.save((q.quotationNumber||'quotation')+'.pdf');}
 function printQuotationPdf(id){const q=getQuotation(id); const doc=buildQuotationPdf(q); if(doc) doc.autoPrint(); if(doc) window.open(doc.output('bloburl'),'_blank');}
