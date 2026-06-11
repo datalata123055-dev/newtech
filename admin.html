@@ -872,15 +872,49 @@ function escapeAttr(v){return escapeHtml(v).replace(/'/g,'&#39;');}
 const COMPANY_PROFILE = {
   name:'NewTech Home Solutions',
   logo:'assets/logo.png',
-  address:'F-1, Hari Nagar II, Near Eco Park, South Delhi, Delhi, India',
+  address:'F-1, Hari Nagar II, Near Eco Park & Lohia Pull, Badarpur, New Delhi - 110044',
+  officeAddress:'D-4/2, Okhla Industrial Area, Phase-1, New Delhi - 110020',
   contacts:['+91 9315739299','+91 9354831931'],
   email:'homesolutionsnewtech@gmail.com',
-  website:location.origin ? location.origin + location.pathname.replace('admin.html','index.html') : 'index.html',
-  gstNumber:'GSTIN: To be updated',
-  terms:['Quotation is valid for 15 days from the quotation date.','Final billing may vary after site verification and exact measurements.','Order processing starts after customer approval and advance payment.','Electrical, civil, scaffolding or access work is excluded unless mentioned.'],
-  warranty:['Product warranty applies as per selected material and manufacturer terms.','Warranty covers manufacturing defects only; misuse, physical damage and site modifications are excluded.','Installation service warranty applies to workmanship subject to normal usage.'],
-  invoiceTerms:["Cheques & NEFT to be issued in favor of Newtech Fly Screens.","Products once produced will neither be cancelled or exchanged or rectified.","Bank Details - AXIS BANK (IFSC - UTIB0000552) A/c No. 922020011452055","Warranty for the period of 5 years for Manufacturing defect except Net, (For Pleated Mesh Only).","Nominal amount of Rs. 500/- would be charged as technician visit, during warranty period.","24% interest would be charged extra for delay payment.","All disputes subject to Delhi Jurisdiction."],
-  warrantyTerms:["Warranty Card covers only the actual user.","Warranty Card is valid for a period of 60 months from the date of installation.","Guarantee of Mesh/Honeycomb for a period of 60 months for natural climate wear tear only.","Warranty Card will be issued only after clearance of total payments.","NewTech Fly Screens will replace all spare parts and malfunctioning due to manufacturing defects.","Replacement for malfunction due to faulty usage would be chargeable as per their value.","Nominal Amount of Rs.500/- would be chargeable as service charge for technician visit.","Cut and damage to Mesh/Honeycomb is not covered under warranty.","Original warranty card (soft copy) has to be produced to avail warranty.","All disputes are subject to Delhi Jurisdiction."]
+  website:'https://newtechhomesolutions.in',
+  gstNumber:'07AATFN5177C1ZY',
+  terms:[
+    'Minimum Chargeable area is 1.02 square meter or 11 Sq.Ft. for all products.',
+    '50% advance to be paid along with order, balance after installation.',
+    'Cheques & NEFT to be issued in favor of NewTech Home Solutions.',
+    'Bank Details - AXIS BANK (IFSC - UTIB0000552) A/c No. 922020011452055',
+    'Products once produced will neither be cancelled or exchanged or rectified.',
+    'Calculation of Area of all products will be in SLAB of 6" for both Width & Height.',
+    'Warranty for the period of 5 Years for Manufacturing defect except Net, from date of delivery.',
+    '5 Years Guarantee of Mesh for Natural climate wear-tear only.',
+    'All disputes subject to Delhi Jurisdiction.'
+  ],
+  warranty:[
+    'Warranty for the period of 5 Years for Manufacturing defect except Net, from date of delivery.',
+    '5 Years Guarantee of Mesh for Natural climate wear-tear only.'
+  ],
+  invoiceTerms:[
+    'Cheques & NEFT to be issued in favor of NewTech Home Solutions.',
+    'Products once produced will neither be cancelled or exchanged or rectified.',
+    'Bank Details - AXIS BANK (IFSC - UTIB0000552) A/c No. 922020011452055',
+    'Warranty for the period of 5 years for Manufacturing defect except Net, (For Pleated Mesh Only).',
+    'Nominal amount of Rs. 500/- would be charged as technician visit, during warranty period.',
+    '24% interest would be charged extra for delay payment.',
+    'All disputes subject to Delhi Jurisdiction.'
+  ],
+  warrantyTerms:[
+    'Warranty Card covers only the actual user.',
+    'Warranty Card is valid for a period of 60 months from the date of installation.',
+    'Guarantee of Mesh/Honeycomb for a period of 60 months for natural climate wear tear only.',
+    'Warranty Card will be issued only after clearance of total payments.',
+    'Warranty Card must be signed and stamped with company seal.',
+    'NewTech Home Solutions will replace all spare parts and malfunctioning due to manufacturing defects.',
+    'Replacement for malfunction due to faulty usage would be chargeable as per their value.',
+    'Nominal Amount of Rs.500/- would be chargeable as service charge for technician visit.',
+    'Cut and damage to Mesh/Honeycomb is not covered under warranty.',
+    'Original warranty card (soft copy) has to be produced to avail warranty.',
+    'All disputes are subject to Delhi Jurisdiction.'
+  ]
 };
 const QUOTE_CATEGORIES = ['Roller Blinds','Zebra Blinds','Wooden Blinds','Printed Blinds','Polyester Pleated Mesh','SS304 Pleated Mesh','Honeycomb Blackout','2 in 1 Pleated Mesh + Honeycomb','PVC Partition','Crystal Partition Door','Security Mesh'];
 const QUOTE_UNITS = ['Sq Ft','Sq Meter','CM','MM'];
@@ -1101,7 +1135,7 @@ function openInvoiceBuilder(id=null){
   document.getElementById('modal').innerHTML = `<div class="modal-card quote-builder"><div class="modal-head"><div><h2>${id?'Edit Existing':'Create New'} Tax Invoice</h2><p class="muted">${COMPANY_PROFILE.name} branded tax invoice with automatic measurements, GST and PDF.</p></div><button class="icon-btn" onclick="closeModal()">✕</button></div>
     <div class="quote-section"><h3>Customer Details</h3><div class="quote-grid"><div class="field"><label>Invoice Number</label><input id="invNumber" value="${escapeAttr(inv.invoiceNumber)}" readonly></div><div class="field"><label>Date</label><input id="invDate" type="date" value="${escapeAttr(inv.invoiceDate||todayISO())}" onchange="refreshInvoiceTotals()"></div><div class="field"><label>Customer Name</label><input id="invCustomer" value="${escapeAttr(inv.customerDetails?.name||inv.customerName||'')}"></div><div class="field"><label>Phone Number</label><input id="invPhone" value="${escapeAttr(inv.customerDetails?.phone||inv.phone||'')}"></div><div class="field"><label>Email</label><input id="invEmail" type="email" value="${escapeAttr(inv.customerDetails?.email||inv.email||'')}"></div><div class="field"><label>City</label><input id="invCity" value="${escapeAttr(inv.customerDetails?.city||'')}"></div><div class="field"><label>State</label><input id="invState" value="${escapeAttr(inv.customerDetails?.state||'')}"></div><div class="field"><label>Country</label><input id="invCountry" value="${escapeAttr(inv.customerDetails?.country||'India')}"></div><div class="field" style="grid-column:1/-1"><label>Installation Address</label><textarea id="invAddress">${escapeHtml(inv.customerDetails?.installationAddress||'')}</textarea></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea id="invNotes">${escapeHtml(inv.customerDetails?.notes||'')}</textarea></div></div></div>
     <div class="quote-section"><div class="quote-product-head"><h3>Product Section</h3><button class="btn btn-ghost" onclick="addInvoiceProduct()">+ Add Product</button></div><div id="invoiceProducts" class="quote-products">${(inv.products?.length?inv.products:[emptyQuoteProduct()]).map((item,i)=>productRowHtml(item,i,'refreshInvoiceTotals')).join('')}</div></div>
-    <div class="quote-section"><h3>GST Module</h3><div class="quote-grid"><div class="field"><label>Tax/GST</label><select id="invTaxMode" onchange="toggleCustomInvoiceTax();refreshInvoiceTotals()">${TAX_OPTIONS.map(t=>`<option ${String(inv.taxMode??18)===String(t.value)?'selected':''} value="${t.value}">${t.label}</option>`).join('')}</select></div><div class="field"><label>Custom Tax %</label><input id="invCustomTax" type="number" step="0.01" value="${escapeAttr(inv.customTaxRate||0)}" oninput="refreshInvoiceTotals()"></div><div class="field"><label>Invoice Discount</label><input id="invExtraDiscount" type="number" step="0.01" value="${escapeAttr(inv.discount||0)}" oninput="refreshInvoiceTotals()"></div><div class="field"><label>Status</label><select id="invStatus"><option value="draft" ${inv.status==='draft'?'selected':''}>Draft</option><option value="paid" ${inv.status==='paid'?'selected':''}>Paid</option><option value="cancelled" ${inv.status==='cancelled'?'selected':''}>Cancelled</option></select></div></div></div>
+    <div class="quote-section"><h3>GST Module</h3><div class="quote-grid"><div class="field"><label>HSN/SAC Code</label><input id="invHsnSac" placeholder="e.g. 7314" value="${escapeAttr(inv.hsnSac||'7314')}"></div><div class="field"><label>Tax/GST</label><select id="invTaxMode" onchange="toggleCustomInvoiceTax();refreshInvoiceTotals()">${TAX_OPTIONS.map(t=>`<option ${String(inv.taxMode??18)===String(t.value)?'selected':''} value="${t.value}">${t.label}</option>`).join('')}</select></div><div class="field"><label>Custom Tax %</label><input id="invCustomTax" type="number" step="0.01" value="${escapeAttr(inv.customTaxRate||0)}" oninput="refreshInvoiceTotals()"></div><div class="field"><label>Invoice Discount</label><input id="invExtraDiscount" type="number" step="0.01" value="${escapeAttr(inv.discount||0)}" oninput="refreshInvoiceTotals()"></div><div class="field"><label>Status</label><select id="invStatus"><option value="draft" ${inv.status==='draft'?'selected':''}>Draft</option><option value="paid" ${inv.status==='paid'?'selected':''}>Paid</option><option value="cancelled" ${inv.status==='cancelled'?'selected':''}>Cancelled</option></select></div></div></div>
     <div class="quote-summary"><div class="quote-totals" id="invoiceTotals"></div><div class="quote-actions"><button class="btn btn-ghost" onclick="saveInvoice('${id||''}','draft')">Save Draft</button><button class="btn btn-navy" onclick="previewCurrentInvoicePdf()">Print PDF</button><button class="btn btn-ghost" onclick="downloadCurrentInvoicePdf()">Download PDF</button><button class="btn btn-primary" onclick="saveInvoice('${id||''}',document.getElementById('invStatus').value)">${id?'Save Changes':'Save Invoice'}</button></div></div></div>`;
   toggleCustomInvoiceTax(); refreshInvoiceTotals();
 }
@@ -1139,6 +1173,7 @@ function invoiceFromForm(){
     },
     customerName:sanitize(document.getElementById('invCustomer').value),phone:sanitize(document.getElementById('invPhone').value),email:sanitize(document.getElementById('invEmail').value),
     products,discount:num(document.getElementById('invExtraDiscount').value),taxMode:document.getElementById('invTaxMode').value,customTaxRate:num(document.getElementById('invCustomTax').value),status:document.getElementById('invStatus').value,
+    hsnSac:sanitize(document.getElementById('invHsnSac')?.value||'7314'),
     companyProfile:COMPANY_PROFILE,pdfUrl:''
   };
   return calculateInvoice(inv);
@@ -1236,6 +1271,68 @@ function downloadCurrentWarrantyCardPdf(){
 
 function getQuotation(id){return calculateQuotation((db.quotations||[]).find(q=>q.id===id)||quotationFromForm());}
 
+
+// ─── PDF Helpers ────────────────────────────────────────────────
+function amountInWords(amount){
+  const n=Math.round(Number(amount)||0);
+  const ones=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  const t=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  function w(n){
+    if(n===0)return '';
+    if(n<20)return ones[n]+' ';
+    if(n<100)return t[Math.floor(n/10)]+' '+(n%10?ones[n%10]+' ':'');
+    if(n<1000)return ones[Math.floor(n/100)]+'Hundred '+(n%100?w(n%100):'');
+    if(n<100000)return w(Math.floor(n/1000))+'Thousand '+(n%1000?w(n%1000):'');
+    if(n<10000000)return w(Math.floor(n/100000))+'Lakh '+(n%100000?w(n%100000):'');
+    return w(Math.floor(n/10000000))+'Crore '+(n%10000000?w(n%10000000):'');
+  }
+  return n===0?'Zero':w(n).trim();
+}
+
+function getLogoBase64(){
+  try{
+    const imgs=document.querySelectorAll('img[alt="Logo"],img[src*="logo"]');
+    for(const img of imgs){
+      if(!img.complete||!img.naturalWidth)continue;
+      const c=document.createElement('canvas');
+      c.width=img.naturalWidth; c.height=img.naturalHeight;
+      c.getContext('2d').drawImage(img,0,0);
+      return {data:c.toDataURL('image/png'),w:img.naturalWidth,h:img.naturalHeight};
+    }
+  }catch(e){}
+  return null;
+}
+
+function pdfCompanyHeader(doc, title){
+  const pw=doc.internal.pageSize.getWidth(); const lm=10; const rm=200;
+  // Title
+  doc.setFontSize(11); doc.setFont('helvetica','bold');
+  doc.text(title, pw/2, 11, {align:'center'});
+  // Logo left
+  const logo=getLogoBase64();
+  let logoW=0;
+  if(logo){
+    const lh=18, lw=Math.round((logo.w/logo.h)*lh);
+    try{ doc.addImage(logo.data,'PNG',lm,14,lw,lh); logoW=lw+2; }catch(e){}
+  }
+  // Company name
+  doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text('NEWTECH HOME SOLUTIONS', pw/2, 20, {align:'center'});
+  // Details
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+  doc.text('Office : '+COMPANY_PROFILE.officeAddress, pw/2, 25.5, {align:'center'});
+  doc.text('Factory : '+COMPANY_PROFILE.address, pw/2, 29.5, {align:'center'});
+  doc.text('Email : '+COMPANY_PROFILE.email+'   info@newtechhomesolutions.in', pw/2, 33.5, {align:'center'});
+  doc.text('Website : '+COMPANY_PROFILE.website, pw/2, 37.5, {align:'center'});
+  doc.text('Contact Number : '+COMPANY_PROFILE.contacts.join(', '), pw/2, 41.5, {align:'center'});
+  // GST right
+  doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('Our GST : '+COMPANY_PROFILE.gstNumber, pw-lm, 41.5, {align:'right'});
+  // Divider
+  doc.setLineWidth(0.5); doc.line(lm, 44, pw-lm, 44);
+  return 45;
+}
+
 function pdfProductRows(products=[]){
   return (products||[]).map(item => {
     const p = calculateItem(item);
@@ -1271,187 +1368,368 @@ function getPdfTableFinalY(doc, fallbackY){
 }
 
 function buildQuotationPdf(q){
-  const {jsPDF} = window.jspdf;
-  const doc = new jsPDF();
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const pw=doc.internal.pageSize.getWidth(); const ph=doc.internal.pageSize.getHeight();
+  const lm=10;
 
-  // Header
-  doc.setFontSize(18);
-  doc.text("QUOTATION", 14, 22);
-  doc.setFontSize(11);
-  doc.text(`Quotation No: ${q.quotationNumber}`, 14, 30);
-  doc.text(`Date: ${q.quotationDate}`, 14, 36);
+  let y=pdfCompanyHeader(doc,'QUOTATION');
 
-  // Company Details
-  doc.setFontSize(10);
-  doc.text(COMPANY_PROFILE.name, 150, 22);
-  doc.text(COMPANY_PROFILE.address, 150, 28);
-  doc.text(`Phone: ${COMPANY_PROFILE.contacts[0]}`, 150, 34);
-  doc.text(`Email: ${COMPANY_PROFILE.email}`, 150, 40);
+  // ── Customer + Quote info box ──
+  const leftW=108, rightW=82, boxH=32;
+  doc.setLineWidth(0.3);
+  doc.rect(lm,y,leftW,boxH);
+  doc.rect(lm+leftW,y,rightW,boxH);
 
-  // Customer Details
-  doc.setFontSize(12);
-  doc.text("Bill To:", 14, 50);
-  doc.setFontSize(10);
-  const qc = q.customerDetails || {};
-  doc.text(qc.name || q.customerName || "Customer", 14, 56);
-  doc.text(qc.installationAddress || "", 14, 62);
-  doc.text([qc.city, qc.state].filter(Boolean).join(", "), 14, 68);
-  doc.text(qc.phone || q.phone || "", 14, 74);
+  const qc=q.customerDetails||{};
+  let lby=y+5; const lx=lm+2, vx=lm+26;
+  doc.setFontSize(8.5);
 
-  // Products Table
-  const tableColumn = ["Category", "Product", "Qty", "Unit", "Rate/Sq Ft", "Amount"];
-  const tableRows = pdfProductRows(q.products);
+  function lbl(label,val,x1,x2,yy){
+    doc.setFont('helvetica','bold'); doc.text(label,x1,yy);
+    doc.setFont('helvetica','normal'); doc.text(String(val||''),x2,yy);
+  }
 
-  renderPdfTable(doc, tableColumn, tableRows, {
-    startY: 80,
-    headStyles: { fillColor: [41, 128, 185] },
-    styles: { fontSize: 9, cellPadding: 2, overflow: 'linebreak' },
-    columnStyles: {
-      0: { cellWidth: 30 },
-      1: { cellWidth: 70 },
-      2: { cellWidth: 15 },
-      3: { cellWidth: 15 },
-      4: { cellWidth: 25 },
-      5: { cellWidth: 25, halign: 'right' }
-    }
+  lbl('To.',qc.name||q.customerName||'',lx,vx,lby);
+  lby+=4.5;
+  doc.setFont('helvetica','bold'); doc.text('Address :',lx,lby);
+  doc.setFont('helvetica','normal');
+  const addrLines=doc.splitTextToSize(qc.installationAddress||'',78);
+  doc.text(addrLines[0]||'',vx,lby);
+  if(addrLines[1]){lby+=4; doc.text(addrLines[1],vx,lby);}
+  lby+=5; lbl('Contact :',qc.phone||q.phone||'',lx,vx,lby);
+  lby+=4.5; lbl('E mail :',qc.email||'',lx,vx,lby);
+  lby+=4.5; lbl('Gst No. :',qc.gstNo||'',lx,vx,lby);
+
+  // Right box
+  const rx=lm+leftW+3, rlblW=28;
+  let rby=y+5;
+  lbl('Date :',q.quotationDate||'',rx,rx+rlblW,rby);
+  rby+=5; lbl('Quote No.',q.quotationNumber||'',rx,rx+rlblW,rby);
+  rby+=5; lbl('Installation :',qc.installationTime||'Within 4 working days',rx,rx+rlblW,rby);
+
+  y=y+boxH+1;
+
+  // ── Products Table ──
+  const products=q.products||[];
+  const bodyRows=[];
+  products.forEach((item,idx)=>{
+    const p=calculateItem(item);
+    const rate=num(p.rateSqFt)||(num(p.rateSqMeter)?num(p.rateSqMeter)/10.7639:0);
+    const desc=(item.category||'')+(item.productName?('\n'+item.productName):'');
+    bodyRows.push([String(idx+1),desc,String(num(item.quantity)||1),p.areaSqFt?p.areaSqFt.toFixed(2):'',rate?String(rate):'',p.lineTotal?p.lineTotal.toFixed(2):'']);
   });
+  while(bodyRows.length<8) bodyRows.push(['','','','','','']);
 
-  let finalY = getPdfTableFinalY(doc, 80);
-
-  // Totals
-  doc.setFontSize(10);
-  doc.text(`Subtotal: ${currency(q.subtotal)}`, 150, finalY + 10);
-  doc.text(`Discount: ${currency(q.discount)}`, 150, finalY + 16);
-  doc.text(`Tax (${q.taxRate}%): ${currency(q.taxAmount)}`, 150, finalY + 22);
-  doc.setFontSize(12);
-  doc.text(`Total: ${currency(q.total)}`, 150, finalY + 30);
-
-  // Terms and Conditions
-  finalY = finalY + 40;
-  doc.setFontSize(10);
-  doc.text("Terms and Conditions:", 14, finalY);
-  COMPANY_PROFILE.terms.forEach((term, i) => {
-    doc.text(`${i + 1}. ${term}`, 14, finalY + 6 + (i * 6));
+  doc.autoTable({
+    startY:y,
+    head:[['S.No.','Product Description','Quantity','Area\n(In Sqft)','Rate\n(In Rs.)','Amount\n(In Rs.)']],
+    body:bodyRows,
+    theme:'grid',
+    headStyles:{fillColor:[255,255,255],textColor:[0,0,0],fontStyle:'bold',lineColor:[0,0,0],lineWidth:0.3,fontSize:8,halign:'center',valign:'middle',cellPadding:2},
+    bodyStyles:{fillColor:[255,255,255],textColor:[0,0,0],lineColor:[0,0,0],lineWidth:0.2,fontSize:8,cellPadding:2},
+    columnStyles:{0:{cellWidth:10,halign:'center'},1:{cellWidth:72},2:{cellWidth:18,halign:'center'},3:{cellWidth:24,halign:'center'},4:{cellWidth:24,halign:'center'},5:{cellWidth:24,halign:'right'}},
+    margin:{left:lm,right:lm},tableLineColor:[0,0,0],tableLineWidth:0.3
   });
+  let fy=doc.lastAutoTable.finalY;
 
-  // Warranty
-  finalY = finalY + 6 + (COMPANY_PROFILE.terms.length * 6);
-  doc.text("Warranty:", 14, finalY);
-  COMPANY_PROFILE.warranty.forEach((w, i) => {
-    doc.text(`${i + 1}. ${w}`, 14, finalY + 6 + (i * 6));
+  // ── Totals ──
+  const totalAmt=num(q.productTotal);
+  const deliveryAmt=num(q.delivery)+num(q.installation);
+  const subtotalAmt=num(q.subtotal);
+  const taxAmt=num(q.taxAmount)||num(q.tax);
+  const grandTotal=num(q.total);
+  const roundoff=Math.round(grandTotal)-grandTotal;
+  const totalQty=products.reduce((s,p)=>s+num(p.quantity),0);
+
+  const totRows=[
+    ['','Total','','','',totalAmt.toFixed(2)],
+    ['','Delivery and Installation',String(totalQty||''),'','',deliveryAmt.toFixed(2)],
+    ['','Sub Total (Without GST)','','','',subtotalAmt.toFixed(2)],
+    ['','IGST @ '+(q.taxRate||18)+'%','','','',taxAmt.toFixed(2)],
+    ['','R/O','','','',roundoff.toFixed(2)]
+  ];
+  doc.autoTable({
+    startY:fy,body:totRows,theme:'grid',
+    bodyStyles:{fillColor:[255,255,255],textColor:[0,0,0],lineColor:[0,0,0],lineWidth:0.2,fontSize:8,cellPadding:2},
+    columnStyles:{0:{cellWidth:10},1:{cellWidth:72,fontStyle:'bold'},2:{cellWidth:18,halign:'center'},3:{cellWidth:24},4:{cellWidth:24},5:{cellWidth:24,halign:'right',fontStyle:'bold'}},
+    margin:{left:lm,right:lm},tableLineColor:[0,0,0],tableLineWidth:0.3
   });
+  fy=doc.lastAutoTable.finalY;
 
+  doc.autoTable({
+    startY:fy,body:[['','Total Payable Amount','','','',Math.round(grandTotal).toFixed(2)]],theme:'grid',
+    bodyStyles:{fillColor:[255,255,255],textColor:[0,0,0],lineColor:[0,0,0],lineWidth:0.4,fontSize:9,fontStyle:'bold',cellPadding:2},
+    columnStyles:{0:{cellWidth:10},1:{cellWidth:72},2:{cellWidth:18},3:{cellWidth:24},4:{cellWidth:24},5:{cellWidth:24,halign:'right'}},
+    margin:{left:lm,right:lm},tableLineColor:[0,0,0],tableLineWidth:0.4
+  });
+  fy=doc.lastAutoTable.finalY+2;
+
+  // Amount in words
+  doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+  doc.text('Amount (in words) : - '+amountInWords(Math.round(grandTotal))+' Rupees Only.',lm,fy+4);
+  fy+=10;
+
+  // Terms
+  doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+  doc.text('TERMS & CONDITIONS:',lm,fy);
+  fy+=4;
+  doc.setFont('helvetica','normal');
+  COMPANY_PROFILE.terms.forEach((t,i)=>{
+    const lines=doc.splitTextToSize((i+1)+'.  '+t,180);
+    doc.text(lines,lm+2,fy); fy+=lines.length*4;
+  });
+  fy+=3;
+
+  // Advance / Outstanding + Signature
+  doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+  doc.text('Advance : /-',lm,fy);
+  doc.text('Outstanding : /-',lm,fy+5);
+  doc.text('For NewTech Home Solutions',pw-lm,fy,{align:'right'});
+  doc.setFont('helvetica','normal');
+  doc.text('Authorised Signatory',pw-lm,fy+14,{align:'right'});
+
+  doc.setFontSize(7); doc.text('computer generated',pw/2,ph-5,{align:'center'});
   return doc;
 }
+
 
 function buildInvoicePdf(inv){
-  const {jsPDF} = window.jspdf;
-  const doc = new jsPDF();
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const pw=doc.internal.pageSize.getWidth(); const ph=doc.internal.pageSize.getHeight();
+  const lm=10;
 
-  // Header
-  doc.setFontSize(18);
-  doc.text("TAX INVOICE", 14, 22);
-  doc.setFontSize(11);
-  doc.text(`Invoice No: ${inv.invoiceNumber}`, 14, 30);
-  doc.text(`Date: ${inv.invoiceDate}`, 14, 36);
+  let y=pdfCompanyHeader(doc,'TAX INVOICE');
 
-  // Company Details
-  doc.setFontSize(10);
-  doc.text(COMPANY_PROFILE.name, 150, 22);
-  doc.text(COMPANY_PROFILE.address, 150, 28);
-  doc.text(`Phone: ${COMPANY_PROFILE.contacts[0]}`, 150, 34);
-  doc.text(`Email: ${COMPANY_PROFILE.email}`, 150, 40);
-  doc.text(`GSTIN: ${COMPANY_PROFILE.gstNumber}`, 150, 46);
+  // ── Customer + Invoice info box ──
+  const leftW=108, rightW=82, boxH=32;
+  doc.setLineWidth(0.3);
+  doc.rect(lm,y,leftW,boxH);
+  doc.rect(lm+leftW,y,rightW,boxH);
 
-  // Customer Details
-  doc.setFontSize(12);
-  doc.text("Bill To:", 14, 50);
-  doc.setFontSize(10);
-  const ic = inv.customerDetails || {};
-  doc.text(ic.name || inv.customerName || "Customer", 14, 56);
-  doc.text(ic.installationAddress || "", 14, 62);
-  doc.text([ic.city, ic.state].filter(Boolean).join(", "), 14, 68);
-  doc.text(ic.phone || inv.phone || "", 14, 74);
+  const ic=inv.customerDetails||{};
+  let lby=y+5; const lx=lm+2, vx=lm+22;
+  doc.setFontSize(8.5);
 
-  // Products Table
-  const tableColumn = ["Category", "Product", "Qty", "Unit", "Rate/Sq Ft", "Amount"];
-  const tableRows = pdfProductRows(inv.products);
+  function lbl(label,val,x1,x2,yy){
+    doc.setFont('helvetica','bold'); doc.text(label,x1,yy);
+    doc.setFont('helvetica','normal'); doc.text(String(val||''),x2,yy);
+  }
 
-  renderPdfTable(doc, tableColumn, tableRows, {
-    startY: 80,
-    headStyles: { fillColor: [41, 128, 185] },
-    styles: { fontSize: 9, cellPadding: 2, overflow: 'linebreak' },
-    columnStyles: {
-      0: { cellWidth: 30 },
-      1: { cellWidth: 70 },
-      2: { cellWidth: 15 },
-      3: { cellWidth: 15 },
-      4: { cellWidth: 25 },
-      5: { cellWidth: 25, halign: 'right' }
-    }
+  lbl('To.',ic.name||inv.customerName||'',lx,vx,lby);
+  lby+=4.5;
+  doc.setFont('helvetica','bold'); doc.text('Address :',lx,lby);
+  doc.setFont('helvetica','normal');
+  const addrLines=doc.splitTextToSize(ic.installationAddress||'',82);
+  doc.text(addrLines[0]||'',vx,lby);
+  if(addrLines[1]){lby+=4; doc.text(addrLines[1],vx,lby);}
+  lby+=5; lbl('Contact :',ic.phone||inv.phone||'',lx,vx,lby);
+  lby+=4.5; lbl('Gst No. :',ic.gstNo||'',lx,vx,lby);
+
+  // Right box
+  const rx=lm+leftW+3, rlblW=24;
+  let rby=y+5;
+  lbl('Date :',inv.invoiceDate||'',rx,rx+rlblW,rby);
+  rby+=5;
+  const invYr=inv.invoiceDate?(inv.invoiceDate.slice(2,4)+'-'+String(parseInt(inv.invoiceDate.slice(2,4))+1)):'';
+  lbl('Invoice No.',invYr+'/'+String(inv.invoiceNumber||'').replace(/[^\d]/g,''),rx,rx+rlblW,rby);
+  rby+=5; doc.setFont('helvetica','bold'); doc.text('Ref.',rx,rby); 
+  rby+=5; doc.setFont('helvetica','bold'); doc.text('Delivery Add :',rx,rby);
+  doc.setFont('helvetica','normal'); 
+  const city=ic.city||ic.state||'';
+  if(city) doc.text(city,rx,rby+4);
+
+  y=y+boxH+1;
+
+  // ── Products Table ──
+  const products=inv.products||[];
+  const bodyRows=[];
+  products.forEach((item,idx)=>{
+    const p=calculateItem(item);
+    const rate=num(p.rateSqFt)||(num(p.rateSqMeter)?num(p.rateSqMeter)/10.7639:0);
+    const desc=(item.category||'')+(item.productName?('\n'+item.productName):'');
+    bodyRows.push([String(idx+1),desc,item.hsnSac||'7314',String(num(item.quantity)||1),p.areaSqFt?p.areaSqFt.toFixed(2):'',rate?String(rate):'',p.lineTotal?p.lineTotal.toFixed(2):'']);
   });
+  while(bodyRows.length<6) bodyRows.push(['','','','','','','']);
 
-  let finalY = getPdfTableFinalY(doc, 80);
-
-  // Totals
-  doc.setFontSize(10);
-  doc.text(`Subtotal: ${currency(inv.subtotal)}`, 150, finalY + 10);
-  doc.text(`Discount: ${currency(inv.discount)}`, 150, finalY + 16);
-  doc.text(`Tax (${inv.taxRate}%): ${currency(inv.taxAmount)}`, 150, finalY + 22);
-  doc.setFontSize(12);
-  doc.text(`Total: ${currency(inv.total)}`, 150, finalY + 30);
-
-  // Invoice Terms
-  finalY = finalY + 40;
-  doc.setFontSize(10);
-  doc.text("Invoice Terms:", 14, finalY);
-  COMPANY_PROFILE.invoiceTerms.forEach((term, i) => {
-    doc.text(`${i + 1}. ${term}`, 14, finalY + 6 + (i * 6));
+  doc.autoTable({
+    startY:y,
+    head:[['S.No.','Product Description','HSN\nSAC','Qty.\nNos.','Area\n(in Sqft)','Rate\n(In Rs.)','Amount\n(In Rs.)']],
+    body:bodyRows,
+    theme:'grid',
+    headStyles:{fillColor:[255,255,255],textColor:[0,0,0],fontStyle:'bold',lineColor:[0,0,0],lineWidth:0.3,fontSize:8,halign:'center',valign:'middle',cellPadding:2},
+    bodyStyles:{fillColor:[255,255,255],textColor:[0,0,0],lineColor:[0,0,0],lineWidth:0.2,fontSize:8,cellPadding:2},
+    columnStyles:{0:{cellWidth:10,halign:'center'},1:{cellWidth:60},2:{cellWidth:14,halign:'center'},3:{cellWidth:14,halign:'center'},4:{cellWidth:22,halign:'center'},5:{cellWidth:22,halign:'center'},6:{cellWidth:24,halign:'right'}},
+    margin:{left:lm,right:lm},tableLineColor:[0,0,0],tableLineWidth:0.3
   });
+  let fy=doc.lastAutoTable.finalY;
 
+  // ── Totals ──
+  const productTotal=num(inv.productTotal);
+  const deliveryAmt=num(inv.delivery)+num(inv.installation);
+  const subtotalAmt=num(inv.subtotal);
+  const taxRate=num(inv.taxRate)||18;
+  const taxAmt=num(inv.taxAmount)||num(inv.tax);
+  const halfTax=taxAmt/2;
+  const grandTotal=num(inv.total);
+  const roundoff=Math.round(grandTotal)-grandTotal;
+  const totalQty=products.reduce((s,p)=>s+num(p.quantity),0);
+
+  const totRows=[
+    ['','Total','','','','',productTotal.toFixed(2)],
+    ['','Transportation & Installation Charges',String(totalQty||''),'','','',deliveryAmt.toFixed(2)],
+    ['','Sub Total (Without GST)','','','','',subtotalAmt.toFixed(2)],
+    ['','CGST @ '+(taxRate/2)+'%','','','','',halfTax.toFixed(2)],
+    ['','SGST @ '+(taxRate/2)+'%','','','','',halfTax.toFixed(2)]
+  ];
+  doc.autoTable({
+    startY:fy,body:totRows,theme:'grid',
+    bodyStyles:{fillColor:[255,255,255],textColor:[0,0,0],lineColor:[0,0,0],lineWidth:0.2,fontSize:8,cellPadding:2},
+    columnStyles:{0:{cellWidth:10},1:{cellWidth:60,fontStyle:'bold'},2:{cellWidth:14,halign:'center'},3:{cellWidth:14},4:{cellWidth:22},5:{cellWidth:22},6:{cellWidth:24,halign:'right',fontStyle:'bold'}},
+    margin:{left:lm,right:lm},tableLineColor:[0,0,0],tableLineWidth:0.3
+  });
+  fy=doc.lastAutoTable.finalY+2;
+
+  // GST in words
+  doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('GST Amount (in words) : '+amountInWords(Math.round(taxAmt))+' Rupees Only.',lm,fy);
+  fy+=5;
+
+  // R/O + Total Payable
+  doc.autoTable({
+    startY:fy,
+    body:[
+      ['','','','','','R/o',roundoff.toFixed(2)],
+      ['','Total Payable Amount','','','','',Math.round(grandTotal).toFixed(2)]
+    ],
+    theme:'grid',
+    bodyStyles:{fillColor:[255,255,255],textColor:[0,0,0],lineColor:[0,0,0],lineWidth:0.3,fontSize:9,fontStyle:'bold',cellPadding:2},
+    columnStyles:{0:{cellWidth:10},1:{cellWidth:60},2:{cellWidth:14},3:{cellWidth:14},4:{cellWidth:22},5:{cellWidth:22,halign:'right'},6:{cellWidth:24,halign:'right'}},
+    margin:{left:lm,right:lm},tableLineColor:[0,0,0],tableLineWidth:0.4
+  });
+  fy=doc.lastAutoTable.finalY+2;
+
+  // Total amount in words
+  doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+  doc.text('Total Amount (in words) :- '+amountInWords(Math.round(grandTotal))+' Rupees Only.',lm,fy);
+  fy+=7;
+
+  // Terms
+  doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+  doc.text('TERMS & CONDITIONS:',lm,fy);
+  fy+=4;
+  doc.setFont('helvetica','normal');
+  COMPANY_PROFILE.invoiceTerms.forEach((t,i)=>{
+    const lines=doc.splitTextToSize((i+1)+'.  '+t,180);
+    doc.text(lines,lm+2,fy); fy+=lines.length*4;
+  });
+  fy+=4;
+
+  // Signature
+  doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+  doc.text('For NewTech Home Solutions',pw-lm,fy,{align:'right'});
+  doc.setFont('helvetica','normal');
+  doc.text('Authorised Signatory',pw-lm,fy+14,{align:'right'});
+  doc.setFontSize(7); doc.text('computer generated',pw/2,ph-5,{align:'center'});
   return doc;
 }
+
 
 function buildWarrantyCardPdf(wc){
-  const {jsPDF} = window.jspdf;
-  const doc = new jsPDF();
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const pw=doc.internal.pageSize.getWidth(); const ph=doc.internal.pageSize.getHeight();
+  const lm=10;
 
-  doc.setFontSize(18);
-  doc.text('WARRANTY CARD', 14, 22);
-  doc.setFontSize(11);
-  doc.text(`Serial No: ${wc.serialNo || ''}`, 14, 30);
-  doc.text(`Installation Date: ${wc.installationDate || ''}`, 14, 36);
+  // ── Title ──
+  doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text('WARRANTY CARD', pw/2, 14, {align:'center'});
 
-  doc.setFontSize(10);
-  doc.text(COMPANY_PROFILE.name, 150, 22);
-  doc.text(COMPANY_PROFILE.address, 150, 28);
-  doc.text(`Phone: ${COMPANY_PROFILE.contacts[0] || ''}`, 150, 34);
-  doc.text(`Email: ${COMPANY_PROFILE.email}`, 150, 40);
+  // ── Card 1: Customer Info ──
+  const c1y=18, c1h=80;
+  doc.setLineWidth(0.5); doc.rect(lm,c1y,pw-2*lm,c1h);
 
-  const c = wc.customerDetails || {};
-  doc.setFontSize(12);
-  doc.text('Customer Details:', 14, 50);
-  doc.setFontSize(10);
-  doc.text(c.name || wc.customerName || 'Customer', 14, 56);
-  doc.text(c.installationAddress || '', 14, 62);
-  doc.text([c.city, c.state].filter(Boolean).join(', '), 14, 68);
-  doc.text(c.phone || wc.phone || '', 14, 74);
+  const c=wc.customerDetails||{};
+  let cy=c1y+8; const lx=lm+5; const vx=lm+46;
+  doc.setFontSize(9.5);
 
-  doc.setFontSize(12);
-  doc.text('Product Details:', 14, 84);
-  doc.setFontSize(10);
-  doc.text(`Product Purchased: ${wc.productPurchased || ''}`, 14, 90);
-  doc.text(`Status: ${wc.status || 'active'}`, 14, 96);
+  function wcRow(label,val,yy){
+    doc.setFont('helvetica','bold'); doc.text(label,lx,yy);
+    doc.setLineWidth(0.2); doc.line(vx-2,yy+0.5,pw-lm-5,yy+0.5);
+    doc.setFont('helvetica','normal'); doc.text(String(val||''),vx,yy);
+  }
 
-  let finalY = 106;
-  doc.setFontSize(10);
-  doc.text('Warranty Terms:', 14, finalY);
-  (COMPANY_PROFILE.warrantyTerms || COMPANY_PROFILE.warranty || []).forEach((term, i) => {
-    doc.text(`${i + 1}. ${term}`, 14, finalY + 6 + (i * 6));
+  wcRow("Customer's Name",c.name||wc.customerName||'',cy);
+  cy+=7; 
+  doc.setFont('helvetica','bold'); doc.text('Address',lx,cy);
+  doc.setLineWidth(0.2); doc.line(vx-2,cy+0.5,pw-lm-5,cy+0.5);
+  doc.setFont('helvetica','normal');
+  const wcAddr=doc.splitTextToSize(c.installationAddress||'',pw-lm-5-vx+2);
+  doc.text(wcAddr[0]||'',vx,cy);
+  if(wcAddr[1]){cy+=5; doc.line(lm+5,cy+0.5,pw-lm-5,cy+0.5); doc.text(wcAddr[1],lx,cy);}
+  cy+=7;
+  doc.setFont('helvetica','bold'); doc.text('Mobile No.',lx,cy);
+  doc.setFont('helvetica','normal'); doc.text(c.phone||wc.phone||'',vx,cy);
+  doc.setFont('helvetica','bold'); doc.text('E-mail',pw/2+5,cy);
+  doc.setFont('helvetica','normal'); doc.text(c.email||'',pw/2+20,cy);
+  cy+=7; wcRow('Product Purchased',wc.productPurchased||'',cy);
+  cy+=7; wcRow('Order/Invoice No.',wc.serialNo||'',cy);
+  cy+=7; wcRow('Installation Date',wc.installationDate||'',cy);
+
+  // Company watermark in center of box
+  const logo=getLogoBase64();
+  if(logo){
+    const lh=28, lw=Math.round((logo.w/logo.h)*lh);
+    try{ doc.addImage(logo.data,'PNG',pw/2-lw/2+20,c1y+22,lw,lh,undefined,'NONE',0); }catch(e){}
+  }
+  doc.setFontSize(9); doc.setFont('helvetica','italic');
+  doc.setTextColor(150,150,150);
+  doc.text('"Supreme Insect Protection Systems"',pw/2+14,c1y+54,{align:'center'});
+  doc.setTextColor(0,0,0);
+
+  // Installed By + Signatory
+  cy=c1y+c1h-10;
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
+  doc.text('Installed By',lx,cy);
+  doc.setFont('helvetica','normal');
+  doc.setLineWidth(0.2); doc.line(lx+22,cy+0.5,lx+70,cy+0.5);
+  doc.text(wc.installedBy||'',lx+24,cy);
+  doc.setFont('helvetica','bold');
+  doc.text('Authorised Signatory',pw-lm-5,cy,{align:'right'});
+
+  // ── Card 2: Terms & Conditions ──
+  const c2y=c1y+c1h+6, c2h=ph-c2y-10;
+  doc.setLineWidth(0.5); doc.rect(lm,c2y,pw-2*lm,c2h);
+
+  let ty=c2y+7;
+  doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('Terms & Conditions:',lx,ty);
+  ty+=5;
+  doc.setFont('helvetica','normal');
+  const romans=['(i)','(ii)','(iii)','(iv)','(v)','(vi)','(vii)','(viii)','(ix)','(x)','(xi)'];
+  (COMPANY_PROFILE.warrantyTerms||[]).forEach((t,i)=>{
+    const lines=doc.splitTextToSize(romans[i]||('('+(i+1)+')')+' '+t, pw-2*lm-12);
+    doc.text(lines,lx,ty); ty+=lines.length*4.2;
   });
+
+  // Company footer in card 2
+  const logoY=c2y+c2h-28;
+  if(logo){
+    const lh=16, lw=Math.round((logo.w/logo.h)*lh);
+    try{ doc.addImage(logo.data,'PNG',pw/2-lw/2,logoY,lw,lh); }catch(e){}
+  }
+  doc.setFontSize(9.5); doc.setFont('helvetica','bold');
+  doc.text('NewTech Home Solutions',pw/2,logoY+19,{align:'center'});
+  doc.setFontSize(7.5); doc.setFont('helvetica','italic');
+  doc.text('"Supreme Insect Protection Systems"',pw/2,logoY+23,{align:'center'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+  doc.text('Address : '+COMPANY_PROFILE.address,pw/2,logoY+28,{align:'center'});
+  doc.text('Contact : '+COMPANY_PROFILE.contacts.join(', ')+'   Website : '+COMPANY_PROFILE.website,pw/2,logoY+32,{align:'center'});
 
   return doc;
 }
+
 
 function downloadCurrentQuotationPdf(){
   refreshQuoteTotals();
