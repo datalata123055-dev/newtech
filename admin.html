@@ -1497,10 +1497,11 @@ function buildQuotationPdf(q){
 function buildInvoicePdf(inv){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
-  const pw=doc.internal.pageSize.getWidth(); const ph=doc.internal.pageSize.getHeight();
-  const lm=10;
+  const pw=doc.internal.pageSize.getWidth();
+  const ph=doc.internal.pageSize.getHeight();
+  const lm=10, rm=10, tw=pw-lm-rm; // tw = 190mm
 
-  // ── Calculated totals ──
+  // Calculated totals
   const products=inv.products||[];
   const productTotal=num(inv.productTotal)||products.reduce((s,i)=>s+num(calculateItem(i).lineTotal),0);
   const deliveryAmt=num(inv.delivery)+num(inv.installation);
@@ -1514,8 +1515,8 @@ function buildInvoicePdf(inv){
 
   let y=pdfCompanyHeader(doc,'TAX INVOICE');
 
-  // ── Customer + Invoice info box ──
-  const leftW=108, rightW=82, boxH=32;
+  // Customer + Invoice info box
+  const leftW=108, rightW=tw-leftW, boxH=32;
   doc.setLineWidth(0.3);
   doc.rect(lm,y,leftW,boxH);
   doc.rect(lm+leftW,y,rightW,boxH);
@@ -1539,41 +1540,56 @@ function buildInvoicePdf(inv){
   lby+=5; lbl('Contact :',ic.phone||inv.phone||'',lx,vx,lby);
   lby+=4.5; lbl('Gst No. :',ic.gstNo||'',lx,vx,lby);
 
-  // Right box
   const rx=lm+leftW+3, rlblW=24;
   let rby=y+5;
   lbl('Date :',inv.invoiceDate||'',rx,rx+rlblW,rby);
   rby+=5;
   const invYr=inv.invoiceDate?(inv.invoiceDate.slice(2,4)+'-'+String(parseInt(inv.invoiceDate.slice(2,4))+1)):'';
   lbl('Invoice No.',invYr+'/'+String(inv.invoiceNumber||'').replace(/[^\d]/g,''),rx,rx+rlblW,rby);
-  rby+=5; doc.setFont('helvetica','bold'); doc.text('Ref.',rx,rby); 
+  rby+=5; doc.setFont('helvetica','bold'); doc.text('Ref.',rx,rby);
   rby+=5; doc.setFont('helvetica','bold'); doc.text('Delivery Add :',rx,rby);
-  doc.setFont('helvetica','normal'); 
+  doc.setFont('helvetica','normal');
   const city=ic.city||ic.state||'';
   if(city) doc.text(city,rx,rby+4);
 
   y=y+boxH+1;
 
-  // ── Products Table ──
+  // CW: 10+65+16+14+22+30+33 = 190mm (exact full width, no phantom column)
+  const CW=[10,65,16,14,22,30,33];
+
+  // Products + Totals in ONE table
   const bodyRows=[];
-  products.forEach((item,idx)=>{
+  products.forEach((item,i)=>{
     const p=calculateItem(item);
     const rate=num(p.rateSqFt)||(num(p.rateSqMeter)?num(p.rateSqMeter)/10.7639:0);
     const desc=(item.category||'')+(item.productName?('\n'+item.productName):'');
-    bodyRows.push([String(idx+1),desc,item.hsnSac||'7314',String(num(item.quantity)||1),p.areaSqFt?p.areaSqFt.toFixed(2):'',rate?String(rate):'',p.lineTotal?p.lineTotal.toFixed(2):'']);
+    bodyRows.push([
+      String(i+1),desc,item.hsnSac||'7314',
+      String(num(item.quantity)||1),
+      p.areaSqFt?p.areaSqFt.toFixed(2):'',
+      rate?currency2(rate):'',
+      p.lineTotal?currency2(p.lineTotal):''
+    ]);
   });
   while(bodyRows.length<6) bodyRows.push(['','','','','','','']);
-
-  // Merge products + totals into ONE seamless table (no double borders)
   const productCount=bodyRows.length;
-  const totRows=[
-    ['','Total','','','','',productTotal.toFixed(2)],
-    ['','Transportation & Installation Charges','','',String(totalQty||''),'',deliveryAmt.toFixed(2)],
-    ['','Sub Total (Without GST)','','','','',subtotalAmt.toFixed(2)],
-    ['','CGST @ '+(taxRate/2)+'%','','','','',halfTax.toFixed(2)],
-    ['','SGST @ '+(taxRate/2)+'%','','','','',halfTax.toFixed(2)]
+  const allRows=[...bodyRows,
+    ['','Total','','','','',currency2(productTotal)],
+    ['','Transportation & Installation Charges','','',String(totalQty||''),'',currency2(deliveryAmt)],
+    ['','Sub Total (Without GST)','','','','',currency2(subtotalAmt)],
+    ['','CGST @ '+(taxRate/2)+'%','','','','',currency2(halfTax)],
+    ['','SGST @ '+(taxRate/2)+'%','','','','',currency2(halfTax)]
   ];
-  const allRows=[...bodyRows,...totRows];
+
+  const colStyles={
+    0:{cellWidth:CW[0],halign:'center'},
+    1:{cellWidth:CW[1]},
+    2:{cellWidth:CW[2],halign:'center'},
+    3:{cellWidth:CW[3],halign:'center'},
+    4:{cellWidth:CW[4],halign:'center'},
+    5:{cellWidth:CW[5],halign:'right'},
+    6:{cellWidth:CW[6],halign:'right'}
+  };
 
   doc.autoTable({
     startY:y,
@@ -1582,41 +1598,32 @@ function buildInvoicePdf(inv){
     theme:'grid',
     headStyles:{fillColor:[255,255,255],textColor:[0,0,0],fontStyle:'bold',lineColor:[0,0,0],lineWidth:0.3,fontSize:8,halign:'center',valign:'middle',cellPadding:2},
     bodyStyles:{fillColor:[255,255,255],textColor:[0,0,0],lineColor:[0,0,0],lineWidth:0.3,fontSize:8,cellPadding:2},
-    columnStyles:{
-      0:{cellWidth:10,halign:'center'},
-      1:{cellWidth:60},
-      2:{cellWidth:16,halign:'center'},
-      3:{cellWidth:14,halign:'center'},
-      4:{cellWidth:22,halign:'center'},
-      5:{cellWidth:24,halign:'right'},
-      6:{cellWidth:24,halign:'right'}
-    },
+    columnStyles:colStyles,
     didParseCell:function(data){
-      if(data.section==='body' && data.row.index>=productCount){
-        if(data.column.index===1) data.cell.styles.fontStyle='bold';
-        if(data.column.index===6) data.cell.styles.fontStyle='bold';
+      if(data.section==='body'&&data.row.index>=productCount){
+        if(data.column.index===1||data.column.index===6) data.cell.styles.fontStyle='bold';
       }
     },
-    margin:{left:lm,right:lm},tableLineColor:[0,0,0],tableLineWidth:0.3
+    margin:{left:lm,right:rm},tableLineColor:[0,0,0],tableLineWidth:0.3
   });
-  let fy=doc.lastAutoTable.finalY+2;
+  let fy=doc.lastAutoTable.finalY;
 
-  // GST in words
+  // GST amount in words
   doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('GST Amount (in words) : '+amountInWords(Math.round(taxAmt))+' Rupees Only.',lm,fy);
-  fy+=5;
+  doc.text('GST Amount (in words) : '+amountInWords(Math.round(taxAmt))+' Rupees Only.',lm,fy+5);
+  fy+=9;
 
-  // R/O + Total Payable
+  // R/o + Total Payable — same column widths, no phantom column
   doc.autoTable({
     startY:fy,
     body:[
-      ['','','','','','R/o',roundoff.toFixed(2)],
-      ['','Total Payable Amount','','','','',Math.round(grandTotal).toFixed(2)]
+      ['','','','','','R/o',roundoff!==0?roundoff.toFixed(2):''],
+      ['','Total Payable Amount','','','','',currency2(Math.round(grandTotal))]
     ],
     theme:'grid',
     bodyStyles:{fillColor:[255,255,255],textColor:[0,0,0],lineColor:[0,0,0],lineWidth:0.3,fontSize:9,fontStyle:'bold',cellPadding:2},
-    columnStyles:{0:{cellWidth:10},1:{cellWidth:60},2:{cellWidth:14},3:{cellWidth:14},4:{cellWidth:22},5:{cellWidth:22,halign:'right'},6:{cellWidth:24,halign:'right'}},
-    margin:{left:lm,right:lm},tableLineColor:[0,0,0],tableLineWidth:0.4
+    columnStyles:colStyles,
+    margin:{left:lm,right:rm},tableLineColor:[0,0,0],tableLineWidth:0.3
   });
   fy=doc.lastAutoTable.finalY+2;
 
@@ -1625,10 +1632,9 @@ function buildInvoicePdf(inv){
   doc.text('Total Amount (in words) :- '+amountInWords(Math.round(grandTotal))+' Rupees Only.',lm,fy);
   fy+=7;
 
-  // Terms
+  // Terms & Conditions
   doc.setFontSize(7.5); doc.setFont('helvetica','bold');
-  doc.text('TERMS & CONDITIONS:',lm,fy);
-  fy+=4;
+  doc.text('TERMS & CONDITIONS:',lm,fy); fy+=4;
   doc.setFont('helvetica','normal');
   COMPANY_PROFILE.invoiceTerms.forEach((t,i)=>{
     const lines=doc.splitTextToSize((i+1)+'.  '+t,180);
