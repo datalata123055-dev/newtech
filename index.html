@@ -1970,9 +1970,10 @@
 
       if (photoFile) {
         btn.innerHTML = '📤 Uploading Photo...';
-        const fileName = `${Date.now()}_${photoFile.name}`;
+        const compressed = await compressToWebP(photoFile);
+        const fileName = `${Date.now()}_${compressed.name}`;
         const storageRef = storage.ref().child(`reviews/${fileName}`);
-        const snapshot = await storageRef.put(photoFile);
+        const snapshot = await storageRef.put(compressed);
         photoUrl = await snapshot.ref.getDownloadURL();
       }
 
@@ -2080,18 +2081,12 @@
       initHeroSlider(sorted);
     }
 
-    // Category images
-    const catMap = {
-      pleatedMesh:    'catImg-pleatedMesh',
-      honeyComb:      'catImg-honeyComb',
-      invisibleGrill: 'catImg-invisibleGrill',
-      antiBirdNet:    'catImg-antiBirdNet'
-    };
+    // Category images — dynamic: any key saved by admin maps to catImg-{key}
     if (data.categoryImages) {
-      Object.entries(catMap).forEach(([key, elId]) => {
-        if (data.categoryImages[key]?.url) {
-          const el = document.getElementById(elId);
-          if (el) el.src = data.categoryImages[key].url;
+      Object.entries(data.categoryImages).forEach(([key, val]) => {
+        if (val?.url) {
+          const el = document.getElementById('catImg-' + key);
+          if (el) el.src = val.url;
         }
       });
     }
@@ -2216,6 +2211,38 @@
   
   document.addEventListener('keydown', function(e){ if(e.key==='Escape') { closeLB(); if(document.getElementById('catTabOverlay').classList.contains('open')) closeCategoryTab(); } });
 })();
+
+// ── WebP Compression Utility (max 130 KB) ─────────────────────────────────
+async function compressToWebP(file, maxKB = 130) {
+  if (!file || !file.type.startsWith('image/')) return file;
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      let quality = 0.85;
+      const tryCompress = () => {
+        canvas.toBlob((blob) => {
+          if (!blob) { resolve(file); return; }
+          if (blob.size <= maxKB * 1024 || quality <= 0.1) {
+            const base = (file.name.replace(/\.[^.]+$/, '') || 'image');
+            resolve(new File([blob], base + '.webp', { type: 'image/webp', lastModified: Date.now() }));
+          } else {
+            quality = Math.max(0.1, quality - 0.1);
+            tryCompress();
+          }
+        }, 'image/webp', quality);
+      };
+      tryCompress();
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+// ─────────────────────────────────────────────────────────────────────────────
 </script>
 
 </body>

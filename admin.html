@@ -2096,12 +2096,13 @@ async function muSave(id) {
       progressWrap.classList.remove('hidden');
 
       await ensureFirebaseUser();
-      const safeName   = _muFile.name.replace(/[^a-z0-9._-]/gi, '-').toLowerCase();
+      const _muFileComp = await compressToWebP(_muFile);
+      const safeName   = _muFileComp.name.replace(/[^a-z0-9._-]/gi, '-').toLowerCase();
       const recId      = id || uid();
       const path       = `site-media/${recId}-${Date.now()}-${safeName}`;
       const ref        = fstorage.ref().child(path);
-      const uploadTask = ref.put(_muFile, {
-        contentType: _muFile.type,
+      const uploadTask = ref.put(_muFileComp, {
+        contentType: _muFileComp.type,
         customMetadata: { uploadedBy: state.session?.email || 'admin', title, category }
       });
 
@@ -2539,12 +2540,13 @@ async function saveThumbImage(opts){
   try{
     if(file){
       await ensureFirebaseUser();
-      const safeName=file.name.replace(/[^a-z0-9._-]/gi,'-').toLowerCase();
+      const fileComp=await compressToWebP(file);
+      const safeName=fileComp.name.replace(/[^a-z0-9._-]/gi,'-').toLowerCase();
       const path=`site-thumbnails/${opts.type}/${Date.now()}-${safeName}`;
       const ref=fstorage.ref().child(path);
       document.getElementById('thumbProgressWrap').style.display='block';
       imageUrl=await new Promise((resolve,reject)=>{
-        const task=ref.put(file,{contentType:file.type,customMetadata:{uploadedBy:state.session?.email||'admin'}});
+        const task=ref.put(fileComp,{contentType:fileComp.type,customMetadata:{uploadedBy:state.session?.email||'admin'}});
         task.on('state_changed',
           snap=>{
             const pct=(snap.bytesTransferred/snap.totalBytes*100).toFixed(0);
@@ -2691,9 +2693,10 @@ async function mpcUpload(input, key) {
   if (prog) prog.style.display = 'block';
   
   try {
-    var fname = key + '_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    var compressed = await compressToWebP(file);
+    var fname = key + '_' + Date.now() + '_' + compressed.name.replace(/[^a-zA-Z0-9._-]/g,'_');
     var ref = fstorage.ref('categoryPhotos/'+key+'/'+fname);
-    var task = ref.put(file);
+    var task = ref.put(compressed);
     await new Promise(function(res, rej) {
       task.on('state_changed', function(snap) {
         var pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
@@ -2738,6 +2741,38 @@ function mpcClear(key) {
   }).catch(function(e) { toast('Error: '+e.message); });
 }
 
+
+// ── WebP Compression Utility (max 130 KB) ─────────────────────────────────
+async function compressToWebP(file, maxKB = 130) {
+  if (!file || !file.type.startsWith('image/')) return file;
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      let quality = 0.85;
+      const tryCompress = () => {
+        canvas.toBlob((blob) => {
+          if (!blob) { resolve(file); return; }
+          if (blob.size <= maxKB * 1024 || quality <= 0.1) {
+            const base = (file.name.replace(/\.[^.]+$/, '') || 'image');
+            resolve(new File([blob], base + '.webp', { type: 'image/webp', lastModified: Date.now() }));
+          } else {
+            quality = Math.max(0.1, quality - 0.1);
+            tryCompress();
+          }
+        }, 'image/webp', quality);
+      };
+      tryCompress();
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+// ─────────────────────────────────────────────────────────────────────────────
 </script>
 </body>
 </html>
