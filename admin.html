@@ -929,7 +929,7 @@ function generateQuotationNumber(){
   const count = (db.quotations||[]).filter(q => String(q.quotationNumber||'').includes('NTHS-'+y)).length + 1;
   return `NTHS-${y}-${String(count).padStart(4,'0')}`;
 }
-function emptyQuoteProduct(){return {category:QUOTE_CATEGORIES[0],productName:'',width:0,height:0,unit:'Sq Ft',quantity:1,rateSqFt:0,rateSqMeter:0,installationCharge:0,deliveryCharge:0,discount:0,notes:''};}
+function emptyQuoteProduct(){return {category:'',productName:'',width:0,height:0,unit:'Sq Ft',quantity:1,rateSqFt:0,rateSqMeter:0,installationCharge:0,deliveryCharge:0,discount:0,notes:''};}
 function calculateItem(item){
   const width=num(item.width), height=num(item.height), qty=Math.max(1,num(item.quantity)||1);
   let areaSqFt = 0;
@@ -1059,7 +1059,7 @@ function productRowHtml(item={},i=0,refreshFn='refreshQuoteTotals'){
   item={...emptyQuoteProduct(),...item};
   const calc=calculateItem(item);
   return `<div class="quote-product" data-index="${i}"><div class="quote-product-head"><strong>Product ${i+1}</strong><button class="icon-btn" onclick="this.closest('.quote-product').remove();${refreshFn}()">Remove</button></div><div class="quote-grid">
-    <div class="field"><label>Category</label><select data-q="category" onchange="${refreshFn}()">${QUOTE_CATEGORIES.map(c=>`<option ${item.category===c?'selected':''} value="${c}">${c}</option>`).join('')}</select></div>
+    <div class="field"><label>Category</label><select data-q="category" onchange="${refreshFn}()"><option value="">-- Select Category --</option>${QUOTE_CATEGORIES.map(c=>`<option ${item.category===c?'selected':''} value="${c}">${c}</option>`).join('')}</select></div>
     <div class="field"><label>Product Name</label><input data-q="productName" value="${escapeAttr(item.productName)}" oninput="${refreshFn}()"></div>
     <div class="field"><label>Width</label><input data-q="width" type="number" step="0.01" value="${escapeAttr(item.width)}" oninput="${refreshFn}()"></div>
     <div class="field"><label>Height</label><input data-q="height" type="number" step="0.01" value="${escapeAttr(item.height)}" oninput="${refreshFn}()"></div>
