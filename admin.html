@@ -1402,7 +1402,7 @@ function addPdfNoteBox(doc, label, note, x, y, w){
   setPdfColor(doc,'setTextColor',PDF_BRAND.ink);
   doc.text(lines,x+15,y+5);
   doc.setTextColor(0,0,0);
-  return y+h+2;
+  return y+h+5;
 }
 
 function withPdfOpacity(doc, opacity, callback){
@@ -1423,9 +1423,11 @@ function pdfCompanyHeader(doc, title){
   doc.text(title, pw/2, 8.5, {align:'center'});
 
   const logo=getLogoBase64();
+  let logoPanelW=0;
   if(logo){
-    const lh=18, lw=Math.round((logo.w/logo.h)*lh);
-    try{ doc.addImage(logo.data,'PNG',lm,18,lw,lh); }catch(e){}
+    const lh=15, lw=Math.min(34,Math.round((logo.w/logo.h)*lh));
+    logoPanelW=lw+5;
+    try{ doc.addImage(logo.data,'PNG',lm,20,lw,lh); }catch(e){}
   }
 
   setPdfColor(doc,'setTextColor',PDF_BRAND.navy);
@@ -1435,15 +1437,18 @@ function pdfCompanyHeader(doc, title){
   doc.setFontSize(8); doc.setFont('helvetica','bolditalic');
   doc.text('Supreme Insect Protection Systems', pw/2, 26.5, {align:'center'});
 
+  const detailsX=lm+logoPanelW;
+  const detailsW=pw-lm-detailsX;
+  const detailsCenter=detailsX+(detailsW/2);
   setPdfColor(doc,'setFillColor',PDF_BRAND.sky);
   setPdfColor(doc,'setDrawColor',PDF_BRAND.line);
-  doc.roundedRect(lm,29,pw-2*lm,17.5,2,2,'FD');
+  doc.roundedRect(detailsX,29,detailsW,17.5,2,2,'FD');
   setPdfColor(doc,'setTextColor',PDF_BRAND.ink);
   doc.setFontSize(7.3); doc.setFont('helvetica','normal');
-  doc.text('Office : '+COMPANY_PROFILE.officeAddress, pw/2, 33, {align:'center'});
-  doc.text('Factory : '+COMPANY_PROFILE.address, pw/2, 36.8, {align:'center'});
-  doc.text('Email : '+COMPANY_PROFILE.email+'   |   Website : '+COMPANY_PROFILE.website, pw/2, 40.6, {align:'center'});
-  doc.text('Contact Number : '+COMPANY_PROFILE.contacts.join(', ')+'   |   Our GST : '+COMPANY_PROFILE.gstNumber, pw/2, 44.4, {align:'center'});
+  doc.text('Office : '+COMPANY_PROFILE.officeAddress, detailsCenter, 33, {align:'center'});
+  doc.text('Factory : '+COMPANY_PROFILE.address, detailsCenter, 36.8, {align:'center'});
+  doc.text('Email : '+COMPANY_PROFILE.email+'   |   Website : '+COMPANY_PROFILE.website, detailsCenter, 40.6, {align:'center'});
+  doc.text('Contact Number : '+COMPANY_PROFILE.contacts.join(', ')+'   |   Our GST : '+COMPANY_PROFILE.gstNumber, detailsCenter, 44.4, {align:'center'});
 
   setPdfColor(doc,'setDrawColor',PDF_BRAND.orange);
   doc.setLineWidth(0.7); doc.line(lm, 49, pw-lm, 49);
@@ -1542,7 +1547,7 @@ function buildQuotationPdf(q){
     const desc=(item.category||'')+(item.productName?('\n'+item.productName):'')+(item.notes?('\nNote: '+item.notes):'');
     bodyRows.push([String(idx+1),desc,String(num(item.quantity)||1),p.areaSqFt?p.areaSqFt.toFixed(2):'',rate?String(rate):'',p.productTotal?p.productTotal.toFixed(2):'']);
   });
-  while(bodyRows.length<8) bodyRows.push(['','','','','','']);
+  while(bodyRows.length<4) bodyRows.push(['','','','','','']);
 
   doc.autoTable({
     startY:y,
@@ -1590,7 +1595,7 @@ function buildQuotationPdf(q){
     columnStyles:{0:{cellWidth:10},1:{cellWidth:82},2:{cellWidth:22},3:{cellWidth:26},4:{cellWidth:25},5:{cellWidth:25,halign:'right'}},
     margin:{left:lm,right:lm},tableLineColor:PDF_BRAND.orange,tableLineWidth:0.4
   });
-  fy=doc.lastAutoTable.finalY+2;
+  fy=doc.lastAutoTable.finalY+4;
 
   // Amount in words
   doc.setFontSize(8.5); doc.setFont('helvetica','bold');
@@ -1781,7 +1786,7 @@ function buildInvoicePdf(inv){
     },
     margin:{left:lm,right:rm},tableLineColor:PDF_BRAND.line,tableLineWidth:0.3
   });
-  fy=doc.lastAutoTable.finalY+2;
+  fy=doc.lastAutoTable.finalY+4;
 
   // Total amount in words
   doc.setFontSize(8.5); doc.setFont('helvetica','bold');
