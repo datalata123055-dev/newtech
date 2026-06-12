@@ -1410,7 +1410,7 @@ function buildQuotationPdf(q){
   // Right box
   const rx=lm+leftW+3, rlblW=28;
   let rby=y+5;
-  lbl('Date :',q.quotationDate||'',rx,rx+rlblW,rby);
+  const fmtQDate=q.quotationDate?(q.quotationDate.split('-').reverse().join('.')):'';  lbl('Date :',fmtQDate,rx,rx+rlblW,rby);
   rby+=5; lbl('Quote No.',q.quotationNumber||'',rx,rx+rlblW,rby);
   rby+=5; lbl('Installation :',qc.installationTime||'Within 4 working days',rx,rx+rlblW,rby);
 
@@ -1697,7 +1697,7 @@ function buildWarrantyCardPdf(wc){
   doc.setFont('helvetica','normal'); doc.text(c.email||'',pw/2+20,cy);
   cy+=7; wcRow('Product Purchased',wc.productPurchased||'',cy);
   cy+=7; wcRow('Order/Invoice No.',wc.serialNo||'',cy);
-  cy+=7; wcRow('Installation Date',wc.installationDate||'',cy);
+  const fmtInstDate=wc.installationDate?(wc.installationDate.split('-').reverse().join('.')):'';  cy+=7; wcRow('Installation Date',fmtInstDate,cy);
 
   // Company watermark in center of box
   const logo=getLogoBase64();
