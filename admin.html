@@ -1377,107 +1377,72 @@ function getLogoBase64(){
   }catch(e){}
   return null;
 }
-const COMPANY_STAMP_INK = 'rgba(42,49,158,0.62)';
-const COMPANY_STAMP_PNG_CACHE = {data:null};
+const COMPANY_SIGNATURE_STAMP_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <defs>
+    <path id="stampTopArc" d="M 332 252 A 124 124 0 0 1 580 252"/>
+    <path id="stampBottomArc" d="M 580 252 A 124 124 0 0 1 332 252"/>
+    <filter id="softInk"><feGaussianBlur stdDeviation="0.15"/></filter>
+  </defs>
+  <rect width="900" height="520" fill="white"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="78" y="82" font-size="38" font-weight="700" fill="#111">For NewTech Home Solutions</text>
+    <g fill="none" stroke="#29329f" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#softInk)">
+      <path d="M58 190 C58 126 125 120 155 175 C176 211 178 247 142 248 C108 249 88 220 93 197"/>
+      <path d="M100 153 L145 282"/>
+      <path d="M97 230 C150 246 214 153 248 120 L286 218"/>
+      <path d="M286 218 C336 199 376 186 418 174 C448 166 480 152 505 145"/>
+      <path d="M506 145 C480 154 455 165 430 182"/>
+    </g>
+    <g opacity="0.56" fill="none" stroke="#29329f" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="456" cy="250" r="132" stroke-width="5"/>
+      <circle cx="456" cy="250" r="82" stroke-width="3"/>
+      <text fill="#29329f" stroke="none" font-size="24" font-weight="700" letter-spacing="0.5">
+        <textPath href="#stampTopArc" startOffset="50%" text-anchor="middle">NewTech Home Solutions</textPath>
+      </text>
+      <text fill="#29329f" stroke="none" font-size="34" font-weight="700" letter-spacing="15">
+        <textPath href="#stampBottomArc" startOffset="50%" text-anchor="middle">Interiors</textPath>
+      </text>
+      <text x="456" y="263" fill="#29329f" stroke="none" font-size="31" font-weight="700" text-anchor="middle">New Delhi</text>
+      <text x="338" y="315" fill="#29329f" stroke="none" font-size="41" font-weight="700" text-anchor="middle">★</text>
+      <text x="574" y="315" fill="#29329f" stroke="none" font-size="41" font-weight="700" text-anchor="middle">★</text>
+    </g>
+    <text x="456" y="450" font-size="36" font-weight="400" fill="#111" text-anchor="middle">Authorised Signatory</text>
+  </g>
+</svg>`;
+const COMPANY_SIGNATURE_STAMP_SRC = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(COMPANY_SIGNATURE_STAMP_SVG)}`;
+const COMPANY_SIGNATURE_STAMP_CACHE = {image:null, png:null};
 
-function drawTextOnArc(ctx, text, cx, cy, radius, startDeg, endDeg, options={}){
-  const chars = String(text).split('');
-  if(!chars.length) return;
-  const step = chars.length > 1 ? (endDeg - startDeg) / (chars.length - 1) : 0;
-  ctx.save();
-  ctx.font = options.font || '700 24px Arial, sans-serif';
-  ctx.fillStyle = COMPANY_STAMP_INK;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  chars.forEach((ch, i) => {
-    const angle = (startDeg + step * i) * Math.PI / 180;
-    ctx.save();
-    ctx.translate(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
-    ctx.rotate(angle + (options.flip ? -Math.PI / 2 : Math.PI / 2));
-    ctx.fillText(ch, 0, 0);
-    ctx.restore();
-  });
-  ctx.restore();
+function rasterizeCompanySignatureStamp(img){
+  if(COMPANY_SIGNATURE_STAMP_CACHE.png) return COMPANY_SIGNATURE_STAMP_CACHE.png;
+  if(!img.complete || !img.naturalWidth) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = 900;
+  canvas.height = 520;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  COMPANY_SIGNATURE_STAMP_CACHE.png = canvas.toDataURL('image/jpeg', 0.76);
+  return COMPANY_SIGNATURE_STAMP_CACHE.png;
 }
 
-function drawDemoSignature(ctx, x, y, w, h){
-  ctx.save();
-  ctx.strokeStyle = 'rgba(42,49,158,0.88)';
-  ctx.lineWidth = Math.max(6, w * 0.032);
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.beginPath();
-  ctx.moveTo(x + w * 0.02, y + h * 0.62);
-  ctx.bezierCurveTo(x + w * 0.02, y + h * 0.15, x + w * 0.13, y + h * 0.03, x + w * 0.24, y + h * 0.33);
-  ctx.bezierCurveTo(x + w * 0.33, y + h * 0.58, x + w * 0.25, y + h * 0.88, x + w * 0.14, y + h * 0.73);
-  ctx.moveTo(x + w * 0.14, y + h * 0.35);
-  ctx.lineTo(x + w * 0.28, y + h * 0.96);
-  ctx.moveTo(x + w * 0.20, y + h * 0.75);
-  ctx.bezierCurveTo(x + w * 0.32, y + h * 0.68, x + w * 0.44, y + h * 0.35, x + w * 0.48, y + h * 0.18);
-  ctx.bezierCurveTo(x + w * 0.54, y + h * 0.42, x + w * 0.54, y + h * 0.72, x + w * 0.62, y + h * 0.78);
-  ctx.bezierCurveTo(x + w * 0.69, y + h * 0.58, x + w * 0.76, y + h * 0.48, x + w * 0.86, y + h * 0.50);
-  ctx.bezierCurveTo(x + w * 0.94, y + h * 0.50, x + w * 0.98, y + h * 0.37, x + w * 1.02, y + h * 0.31);
-  ctx.moveTo(x + w * 0.50, y + h * 0.82);
-  ctx.lineTo(x + w * 1.10, y + h * 0.30);
-  ctx.stroke();
-  ctx.restore();
+function getCompanySignatureStampImage(){
+  if(COMPANY_SIGNATURE_STAMP_CACHE.image) return COMPANY_SIGNATURE_STAMP_CACHE.image;
+  const img = new Image();
+  img.onload = () => rasterizeCompanySignatureStamp(img);
+  img.src = COMPANY_SIGNATURE_STAMP_SRC;
+  COMPANY_SIGNATURE_STAMP_CACHE.image = img;
+  return img;
 }
 
 function getCompanySignatureStampPng(){
-  if(COMPANY_STAMP_PNG_CACHE.data) return COMPANY_STAMP_PNG_CACHE.data;
-  const canvas = document.createElement('canvas');
-  canvas.width = 720;
-  canvas.height = 430;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.save();
-  ctx.fillStyle = '#111111';
-  ctx.font = '700 32px Arial, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  ctx.fillText('For NewTech Home Solutions', 80, 24);
-  ctx.restore();
-
-  ctx.save();
-  ctx.strokeStyle = COMPANY_STAMP_INK;
-  ctx.fillStyle = COMPANY_STAMP_INK;
-  ctx.lineWidth = 5;
-  const cx = 405;
-  const cy = 182;
-  const outer = 126;
-  const inner = 78;
-  ctx.beginPath(); ctx.arc(cx, cy, outer, 0, Math.PI * 2); ctx.stroke();
-  ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.arc(cx, cy, inner, 0, Math.PI * 2); ctx.stroke();
-  drawTextOnArc(ctx, 'NewTech Home Solutions', cx, cy, 103, 218, 322, {font:'700 20px Arial, sans-serif'});
-  drawTextOnArc(ctx, 'Interiors', cx, cy, 103, 132, 48, {font:'700 25px Arial, sans-serif', flip:true});
-  ctx.font = '700 25px Arial, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('New Delhi', cx, cy);
-  ctx.font = '700 24px Arial, sans-serif';
-  ctx.fillText('★', cx - 86, cy + 60);
-  ctx.fillText('★', cx + 86, cy + 60);
-  ctx.restore();
-
-  drawDemoSignature(ctx, 52, 68, 330, 128);
-
-  ctx.save();
-  ctx.fillStyle = '#111111';
-  ctx.font = '400 30px Arial, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  ctx.fillText('Authorised Signatory', 360, 324);
-  ctx.restore();
-
-  COMPANY_STAMP_PNG_CACHE.data = canvas.toDataURL('image/png');
-  return COMPANY_STAMP_PNG_CACHE.data;
+  return rasterizeCompanySignatureStamp(getCompanySignatureStampImage()) || COMPANY_SIGNATURE_STAMP_SRC;
 }
 
+getCompanySignatureStampImage();
+
 function addPdfAuthorisedSignature(doc, x, y, w, h){
-  const stamp = getCompanySignatureStampPng();
-  doc.addImage(stamp, 'PNG', x, y, w, h);
+  doc.addImage(getCompanySignatureStampPng(), 'JPEG', x, y, w, h);
 }
 
 function pdfCompanyHeader(doc, title){
