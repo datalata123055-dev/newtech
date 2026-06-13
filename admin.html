@@ -116,6 +116,7 @@
 
     .quote-hero{background:linear-gradient(135deg,rgba(30,58,138,.10),rgba(249,115,22,.10));border:1px solid var(--line);border-radius:24px;padding:22px;display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-bottom:18px;box-shadow:var(--shadow)}
     .quote-hero h2{font-size:26px;margin:0 0 8px;color:var(--navy)}.quote-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.quote-kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}.quote-kpi span{font-size:12px;color:var(--muted);font-weight:800}.quote-kpi strong{display:block;font-size:22px;color:var(--orange);margin-top:4px}.quote-builder{max-width:1200px}.quote-section{border:1px solid var(--line);border-radius:18px;padding:16px;margin:16px 0;background:var(--card)}.quote-section h3{margin:0 0 12px;color:var(--navy)}.quote-products{display:grid;gap:14px}.quote-product{border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--bg)}.quote-product-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.quote-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.quote-grid .field{margin:0}.quote-summary{position:sticky;bottom:0;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 -8px 30px rgba(30,58,138,.08);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.quote-totals{display:grid;grid-template-columns:repeat(6,auto);gap:10px 16px;text-align:right}.quote-totals span{font-size:12px;color:var(--muted);font-weight:800}.quote-totals strong{display:block;color:var(--ink)}.quote-totals .grand strong{font-size:22px;color:var(--orange)}.quote-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.quote-table-actions{display:flex;gap:6px;flex-wrap:wrap}.quotation-print{font-family:Inter,Arial,sans-serif;color:#1e293b}.workflow-strip{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.workflow-strip span{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800;color:var(--navy)}.doc-options{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .pdf-preview-overlay{position:fixed;inset:0;z-index:500;background:rgba(2,6,23,.72);padding:16px;display:grid;place-items:center}.pdf-preview-shell{width:min(1120px,100%);height:min(94vh,920px);background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 24px 80px rgba(2,6,23,.36);display:grid;grid-template-rows:auto 1fr;overflow:hidden}.pdf-preview-bar{min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--card)}.pdf-preview-actions{display:flex;gap:8px;align-items:center}.pdf-preview-body{position:relative;min-height:0;background:#dbe1e8}.pdf-preview-status{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#334155;font-weight:700}.pdf-preview-spinner{width:34px;height:34px;margin:0 auto 14px;border:4px solid #bfdbfe;border-top-color:var(--orange);border-radius:50%;animation:pdf-spin .8s linear infinite}.pdf-preview-frame{width:100%;height:100%;border:0;display:none;background:white}@keyframes pdf-spin{to{transform:rotate(360deg)}}@media(max-width:700px){.pdf-preview-overlay{padding:0}.pdf-preview-shell{width:100%;height:100vh;border-radius:0}.pdf-preview-bar{align-items:flex-start}.pdf-preview-actions{flex-wrap:wrap;justify-content:flex-end}}
     @media(max-width:1100px){.quote-grid{grid-template-columns:repeat(2,1fr)}.quote-hero{grid-template-columns:1fr}.quote-totals{grid-template-columns:repeat(3,auto)}}@media(max-width:700px){.quote-grid,.quote-kpis{grid-template-columns:1fr}.quote-summary{grid-template-columns:1fr}.quote-totals{grid-template-columns:1fr 1fr;text-align:left}.quote-actions{justify-content:flex-start}}
   </style>
 </head>
@@ -1158,16 +1159,25 @@ async function duplicateQuotation(id){
 
 async function downloadQuotationPdf(id){
   const q = calculateQuotation((db.quotations||[]).find(q=>q.id===id)||{});
-  if(q) (await buildQuotationPdf(q)).save(`QuotationNo.${q.quotationNumber}.pdf`);
+  if(!q) return;
+  const pdfWindow = openPdfActionWindow('Preparing quotation PDF...');
+  await downloadPdfDocument(
+    buildQuotationPdf(q),
+    `QuotationNo.${q.quotationNumber}.pdf`,
+    pdfWindow
+  );
 }
 
 async function printQuotationPdf(id){
   const q = calculateQuotation((db.quotations||[]).find(q=>q.id===id)||{});
-  if(q) (await buildQuotationPdf(q)).output('dataurlnewwindow');
+  if(!q) return;
+  const pdfWindow = openPdfActionWindow('Preparing quotation for printing...');
+  await printPdfDocument(buildQuotationPdf(q), pdfWindow);
 }
 
 async function previewCurrentQuotationPdf(){
-  (await buildQuotationPdf(currentQuotation())).output('dataurlnewwindow');
+  const pdfWindow = openPdfActionWindow('Preparing quotation for printing...');
+  await printPdfDocument(buildQuotationPdf(currentQuotation()), pdfWindow);
 }
 
 function generateInvoiceNumber(){
@@ -1282,18 +1292,29 @@ async function duplicateInvoice(id){
 }
 async function downloadInvoicePdf(id){
   const inv = calculateInvoice((db.invoices||[]).find(inv=>inv.id===id)||{});
-  if(inv) (await buildInvoicePdf(inv)).save(`InvoiceNo.${inv.invoiceNumber}.pdf`);
+  if(!inv) return;
+  const pdfWindow = openPdfActionWindow('Preparing invoice PDF...');
+  await downloadPdfDocument(
+    buildInvoicePdf(inv),
+    `InvoiceNo.${inv.invoiceNumber}.pdf`,
+    pdfWindow
+  );
 }
 async function printInvoicePdf(id){
   const inv = calculateInvoice((db.invoices||[]).find(inv=>inv.id===id)||{});
-  if(inv) (await buildInvoicePdf(inv)).output('dataurlnewwindow');
+  if(!inv) return;
+  const pdfWindow = openPdfActionWindow('Preparing invoice for printing...');
+  await printPdfDocument(buildInvoicePdf(inv), pdfWindow);
 }
-async function previewCurrentInvoicePdf(){ (await buildInvoicePdf(currentInvoice())).output('dataurlnewwindow'); }
+async function previewCurrentInvoicePdf(){
+  const pdfWindow = openPdfActionWindow('Preparing invoice for printing...');
+  await printPdfDocument(buildInvoicePdf(currentInvoice()), pdfWindow);
+}
 async function downloadCurrentInvoicePdf(){
   const inv = currentInvoice();
-  const doc = await buildInvoicePdf(inv);
   const num = (inv.invoiceNumber || 'invoice').replace(/[^a-z0-9]/gi, '_');
-  doc.save(`${num}.pdf`);
+  const pdfWindow = openPdfActionWindow('Preparing invoice PDF...');
+  await downloadPdfDocument(buildInvoicePdf(inv), `${num}.pdf`, pdfWindow);
 }
 
 function openWarrantyCardBuilder(id=null){
@@ -1330,24 +1351,173 @@ async function saveWarrantyCard(id){
 }
 async function downloadWarrantyCardPdf(id){
   const wc = (db.warrantyCards||[]).find(wc=>wc.id===id);
-  if(wc) buildWarrantyCardPdf(wc).save(`WarrantyCard.${wc.serialNo}.pdf`);
+  if(!wc) return;
+  const pdfWindow = openPdfActionWindow('Preparing warranty card PDF...');
+  await downloadPdfDocument(
+    Promise.resolve(buildWarrantyCardPdf(wc)),
+    `WarrantyCard.${wc.serialNo}.pdf`,
+    pdfWindow
+  );
 }
 async function printWarrantyCardPdf(id){
   const wc = (db.warrantyCards||[]).find(wc=>wc.id===id);
-  if(wc) buildWarrantyCardPdf(wc).output('dataurlnewwindow');
+  if(!wc) return;
+  const pdfWindow = openPdfActionWindow('Preparing warranty card for printing...');
+  await printPdfDocument(Promise.resolve(buildWarrantyCardPdf(wc)), pdfWindow);
 }
-function printCurrentWarrantyCardPdf(){ buildWarrantyCardPdf(currentWarrantyCard()).output('dataurlnewwindow'); }
-function downloadCurrentWarrantyCardPdf(){
+async function printCurrentWarrantyCardPdf(){
+  const pdfWindow = openPdfActionWindow('Preparing warranty card for printing...');
+  await printPdfDocument(Promise.resolve(buildWarrantyCardPdf(currentWarrantyCard())), pdfWindow);
+}
+async function downloadCurrentWarrantyCardPdf(){
   const wc = currentWarrantyCard();
-  const doc = buildWarrantyCardPdf(wc);
   const serial = (wc.serialNo || 'warranty-card').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-  doc.save(`${serial}.pdf`);
+  const pdfWindow = openPdfActionWindow('Preparing warranty card PDF...');
+  await downloadPdfDocument(
+    Promise.resolve(buildWarrantyCardPdf(wc)),
+    `${serial}.pdf`,
+    pdfWindow
+  );
 }
 
 function getQuotation(id){return calculateQuotation((db.quotations||[]).find(q=>q.id===id)||quotationFromForm());}
 
 
 // ─── PDF Helpers ────────────────────────────────────────────────
+let activePdfPreviewUrl = null;
+let activePdfPreviewFileName = 'NewTech-Document.pdf';
+
+function openPdfActionWindow(message){
+  closePdfPreview();
+  const overlay = document.createElement('div');
+  overlay.className = 'pdf-preview-overlay';
+  overlay.id = 'pdfPreviewOverlay';
+  overlay.innerHTML = `<div class="pdf-preview-shell" role="dialog" aria-modal="true" aria-label="PDF preview">
+    <div class="pdf-preview-bar">
+      <strong>PDF Preview</strong>
+      <div class="pdf-preview-actions">
+        <button class="btn btn-navy" type="button" onclick="printPdfPreview()">Print</button>
+        <button class="btn btn-ghost" type="button" onclick="downloadPdfPreview()">Download</button>
+        <button class="icon-btn" type="button" onclick="closePdfPreview()" aria-label="Close PDF preview">✕</button>
+      </div>
+    </div>
+    <div class="pdf-preview-body">
+      <div class="pdf-preview-status"><div><div class="pdf-preview-spinner"></div>${escapeHtml(message)}</div></div>
+      <iframe class="pdf-preview-frame" title="Generated PDF preview"></iframe>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  return {
+    overlay,
+    frame: overlay.querySelector('.pdf-preview-frame'),
+    status: overlay.querySelector('.pdf-preview-status')
+  };
+}
+
+function showPdfInWindow(doc, pdfWindow, autoPrint=false){
+  if(!pdfWindow || !pdfWindow.overlay?.isConnected) return null;
+  if(autoPrint && typeof doc.autoPrint === 'function') doc.autoPrint();
+  if(activePdfPreviewUrl) URL.revokeObjectURL(activePdfPreviewUrl);
+  activePdfPreviewUrl = URL.createObjectURL(doc.output('blob'));
+  activePdfPreviewFileName = 'NewTech-Document.pdf';
+  if(autoPrint){
+    pdfWindow.frame.onload = () => {
+      try{
+        pdfWindow.frame.contentWindow.focus();
+        pdfWindow.frame.contentWindow.print();
+      }catch(error){
+        console.warn('Automatic print dialog unavailable:', error);
+      }
+    };
+  }
+  pdfWindow.frame.src = activePdfPreviewUrl;
+  pdfWindow.frame.style.display = 'block';
+  pdfWindow.status.style.display = 'none';
+  return activePdfPreviewUrl;
+}
+
+function closePdfPreview(){
+  document.getElementById('pdfPreviewOverlay')?.remove();
+  if(activePdfPreviewUrl){
+    URL.revokeObjectURL(activePdfPreviewUrl);
+    activePdfPreviewUrl = null;
+  }
+  activePdfPreviewFileName = 'NewTech-Document.pdf';
+}
+
+function printPdfPreview(){
+  const frame = document.querySelector('#pdfPreviewOverlay .pdf-preview-frame');
+  if(!frame || frame.style.display === 'none'){
+    toast('PDF is still being prepared.');
+    return;
+  }
+  try{
+    frame.contentWindow.focus();
+    frame.contentWindow.print();
+  }catch(error){
+    console.error('PDF preview print failed:', error);
+    toast('Print dialog could not open. Use the PDF viewer print button.');
+  }
+}
+
+function downloadPdfPreview(){
+  if(!activePdfPreviewUrl){
+    toast('PDF is still being prepared.');
+    return;
+  }
+  const link = document.createElement('a');
+  link.href = activePdfPreviewUrl;
+  link.download = activePdfPreviewFileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+async function downloadPdfDocument(docPromise, fileName, pdfWindow){
+  try{
+    const doc = await docPromise;
+    if(!doc) throw new Error('PDF could not be generated.');
+    const blob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.download = fileName;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    if(pdfWindow && pdfWindow.overlay?.isConnected){
+      if(activePdfPreviewUrl) URL.revokeObjectURL(activePdfPreviewUrl);
+      activePdfPreviewUrl = pdfUrl;
+      activePdfPreviewFileName = fileName;
+      pdfWindow.frame.src = pdfUrl;
+      pdfWindow.frame.style.display = 'block';
+      pdfWindow.status.style.display = 'none';
+    }else{
+      setTimeout(()=>URL.revokeObjectURL(pdfUrl), 120000);
+    }
+    toast('PDF ready. Download started; a preview is also open.');
+  }catch(error){
+    console.error('PDF download failed:', error);
+    closePdfPreview();
+    toast(`PDF download failed: ${error.message || error}`);
+  }
+}
+
+async function printPdfDocument(docPromise, pdfWindow){
+  if(!pdfWindow) return;
+  try{
+    const doc = await docPromise;
+    if(!doc) throw new Error('PDF could not be generated.');
+    showPdfInWindow(doc, pdfWindow, true);
+    toast('Print PDF preview is ready.');
+  }catch(error){
+    console.error('PDF print failed:', error);
+    closePdfPreview();
+    toast(`PDF print failed: ${error.message || error}`);
+  }
+}
+
 function amountInWords(amount){
   const n=Math.round(Number(amount)||0);
   const ones=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
@@ -1999,12 +2169,10 @@ function buildWarrantyCardPdf(wc){
 async function downloadCurrentQuotationPdf(){
   refreshQuoteTotals();
   const q = quotationFromForm();
-  const doc = await buildQuotationPdf(q);
-  if(doc){
-    const name = (q.customerDetails?.name || q.customerName || 'Customer').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const num = (q.quotationNumber || 'quote').replace(/[^a-z0-9]/gi, '_');
-    doc.save(`${num}_${name}.pdf`);
-  }
+  const name = (q.customerDetails?.name || q.customerName || 'Customer').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  const num = (q.quotationNumber || 'quote').replace(/[^a-z0-9]/gi, '_');
+  const pdfWindow = openPdfActionWindow('Preparing quotation PDF...');
+  await downloadPdfDocument(buildQuotationPdf(q), `${num}_${name}.pdf`, pdfWindow);
 }
 async function sendPasswordReset(){
   const email = document.getElementById('email').value.trim();
