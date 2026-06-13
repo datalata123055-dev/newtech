@@ -1158,16 +1158,16 @@ async function duplicateQuotation(id){
 
 async function downloadQuotationPdf(id){
   const q = calculateQuotation((db.quotations||[]).find(q=>q.id===id)||{});
-  if(q) buildQuotationPdf(q).save(`QuotationNo.${q.quotationNumber}.pdf`);
+  if(q) (await buildQuotationPdf(q)).save(`QuotationNo.${q.quotationNumber}.pdf`);
 }
 
 async function printQuotationPdf(id){
   const q = calculateQuotation((db.quotations||[]).find(q=>q.id===id)||{});
-  if(q) buildQuotationPdf(q).output('dataurlnewwindow');
+  if(q) (await buildQuotationPdf(q)).output('dataurlnewwindow');
 }
 
 async function previewCurrentQuotationPdf(){
-  buildQuotationPdf(currentQuotation()).output('dataurlnewwindow');
+  (await buildQuotationPdf(currentQuotation())).output('dataurlnewwindow');
 }
 
 function generateInvoiceNumber(){
@@ -1282,16 +1282,16 @@ async function duplicateInvoice(id){
 }
 async function downloadInvoicePdf(id){
   const inv = calculateInvoice((db.invoices||[]).find(inv=>inv.id===id)||{});
-  if(inv) buildInvoicePdf(inv).save(`InvoiceNo.${inv.invoiceNumber}.pdf`);
+  if(inv) (await buildInvoicePdf(inv)).save(`InvoiceNo.${inv.invoiceNumber}.pdf`);
 }
 async function printInvoicePdf(id){
   const inv = calculateInvoice((db.invoices||[]).find(inv=>inv.id===id)||{});
-  if(inv) buildInvoicePdf(inv).output('dataurlnewwindow');
+  if(inv) (await buildInvoicePdf(inv)).output('dataurlnewwindow');
 }
-async function previewCurrentInvoicePdf(){ buildInvoicePdf(currentInvoice()).output('dataurlnewwindow'); }
-function downloadCurrentInvoicePdf(){
+async function previewCurrentInvoicePdf(){ (await buildInvoicePdf(currentInvoice())).output('dataurlnewwindow'); }
+async function downloadCurrentInvoicePdf(){
   const inv = currentInvoice();
-  const doc = buildInvoicePdf(inv);
+  const doc = await buildInvoicePdf(inv);
   const num = (inv.invoiceNumber || 'invoice').replace(/[^a-z0-9]/gi, '_');
   doc.save(`${num}.pdf`);
 }
@@ -1982,10 +1982,10 @@ function buildWarrantyCardPdf(wc){
 }
 
 
-function downloadCurrentQuotationPdf(){
+async function downloadCurrentQuotationPdf(){
   refreshQuoteTotals();
   const q = quotationFromForm();
-  const doc = buildQuotationPdf(q);
+  const doc = await buildQuotationPdf(q);
   if(doc){
     const name = (q.customerDetails?.name || q.customerName || 'Customer').replace(/[^a-z0-9]/gi, '_').toLowerCase();
     const num = (q.quotationNumber || 'quote').replace(/[^a-z0-9]/gi, '_');
