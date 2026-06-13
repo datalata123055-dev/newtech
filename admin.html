@@ -1439,20 +1439,15 @@ function pdfCompanyHeader(doc, title){
     try{ doc.addImage(logo.data,'PNG',logoX,logoY,lw,lh); }catch(e){}
   }
 
-  // Logo box border on left side
-  setPdfColor(doc,'setDrawColor',PDF_BRAND.navy);
-  doc.setLineWidth(0.5);
-  doc.rect(margin, 18, logoAreaWidth, 28, 'S');
-
-  // Tagline — centered on full page width (ABOVE company name)
-  setPdfColor(doc,'setTextColor',PDF_BRAND.orange);
-  doc.setFontSize(8); doc.setFont('helvetica','bolditalic');
-  doc.text('Supreme Insect Protection Systems', pageWidth/2, 19, {align:'center'});
-
   // Company name — centered on full page width
   setPdfColor(doc,'setTextColor',PDF_BRAND.navy);
   doc.setFontSize(15); doc.setFont('helvetica','bold');
-  doc.text(COMPANY_PROFILE.name.toUpperCase(), pageWidth/2, 25, {align:'center'});
+  doc.text(COMPANY_PROFILE.name.toUpperCase(), pageWidth/2, 22, {align:'center'});
+
+  // Tagline — centered on text area (right side)
+  setPdfColor(doc,'setTextColor',PDF_BRAND.orange);
+  doc.setFontSize(8); doc.setFont('helvetica','bolditalic');
+  doc.text('Supreme Insect Protection Systems', pageWidth/2, 28.5, {align:'center'});
 
   // Company details box — full width, same as Mydoc
   setPdfColor(doc,'setFillColor',PDF_BRAND.sky);
@@ -1471,6 +1466,8 @@ function pdfCompanyHeader(doc, title){
   doc.setTextColor(0,0,0);
   return 53;
 }
+
+
 function pdfProductRows(products=[]){
   return (products||[]).map(item => {
     const p = calculateItem(item);
