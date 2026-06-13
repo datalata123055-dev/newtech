@@ -24,20 +24,72 @@
   }
 
   /* NAVBAR */
-  .navbar{
-    position:fixed;top:0;left:0;right:0;z-index:1000;
-    background:rgba(255,255,255,0.97);
-    backdrop-filter:blur(10px);
-    box-shadow:0 2px 20px rgba(0,0,0,0.06);
-    transition:all .3s ease;
-  }
-  .nav-container{
-    max-width:1280px;margin:0 auto;
-    display:flex;align-items:center;justify-content:space-between;
-    padding:14px 30px;
-  }
-  .logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
-  .logo img{height:55px;width:auto;}
+  .topbar {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 20px;
+background: white;
+border-bottom: 2px solid #e0e0e0;
+margin-bottom: 30px;
+}
+
+.topbar > div:first-child {
+flex: 1;
+}
+
+.topbar .eyebrow {
+font-size: 12px;
+font-weight: 600;
+color: #999;
+margin: 0 0 5px 0;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+
+.topbar h1 {
+font-size: 28px;
+font-weight: 700;
+margin: 0;
+color: #333;
+}
+
+.top-actions {
+display: flex;
+gap: 10px;
+}
+
+.btn {
+padding: 10px 20px;
+border: none;
+border-radius: 4px;
+font-size: 14px;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.btn-primary {
+background: #2563eb;
+color: white;
+}
+
+.btn-primary:hover {
+background: #1d4ed8;
+}
+
+.btn-secondary {
+background: #e5e7eb;
+color: #374151;
+}
+
+.btn-secondary:hover {
+background: #d1d5db;
+}
+
+.btn[hidden] {
+display: none;
+}
   .nav-links{display:flex;gap:30px;list-style:none;}
   .nav-links a{
     text-decoration:none;color:#1f2937;font-weight:500;font-size:15px;
@@ -981,35 +1033,16 @@
 <body>
 
 <!-- NAVBAR -->
-<nav class="navbar">
-  <div class="nav-container">
-    <a href="#" class="logo">
-      <img src="assets/logo.png" alt="NewTech Home Solutions Logo">
-      <div>
-        <div style="font-weight:800;color:var(--navy);font-size:20px;line-height:1;">NewTech <span style="color:var(--orange);">Home Solutions</span></div>
-        <div style="font-size:10px;color:var(--gray);letter-spacing:1px;font-weight:600;">COMPLETE PROTECTION</div>
-      </div>
-    </a>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="#home">Home</a></li>
-      <li><a href="#about">About</a></li>
-      <li><a href="#products">Services</a></li>
-      <li><a href="#gallery">Gallery</a></li>
-      <li><a href="#careers">Careers</a></li>
-      <li><a href="#contact">Contact</a></li>
-      <li class="mobile-only" style="margin-top:8px;">
-        <a href="admin.html" style="display:block;background:var(--navy);color:#fff;text-align:center;padding:10px 18px;border-radius:8px;font-weight:700;font-size:14px;letter-spacing:0.5px;text-decoration:none;">Admin Login</a>
-      </li>
-    </ul>
-    <div style="display:flex;align-items:center;gap:15px;">
-      <a href="#contact" class="nav-cta">Get Quote</a>
-      <a href="admin.html" class="company-login">Admin Login</a>
-      <button class="hamburger" id="hamburger">
-        <span></span><span></span><span></span>
-      </button>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Standalone Project</p>
+      <h1 id="pageTitle">Document Generator</h1>
     </div>
-  </div>
-</nav>
+    <div class="top-actions">
+      <button class="btn btn-secondary" id="backBtn" type="button" hidden>Back</button>
+      <button class="btn btn-primary" id="newBtn" type="button">New Quotation</button>
+    </div>
+  </header>
 
 <!-- HERO -->
 <section class="hero" id="home">
