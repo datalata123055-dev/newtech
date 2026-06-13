@@ -1431,7 +1431,7 @@ function pdfCompanyHeader(doc, title){
   // Logo — bigger, vertically centered in header area
   const logo=getLogoBase64();
   if(logo){
-    const maxW=46, maxH=24;
+    const maxW=20, maxH=15;
     const scale=Math.min(maxW/logo.w, maxH/logo.h);
     const lw=logo.w*scale, lh=logo.h*scale;
     const logoX=margin+(logoAreaWidth-lw)/2;
@@ -1442,7 +1442,7 @@ function pdfCompanyHeader(doc, title){
   // Company name — centered on full page width
   setPdfColor(doc,'setTextColor',PDF_BRAND.navy);
   doc.setFontSize(15); doc.setFont('helvetica','bold');
-  doc.text(COMPANY_PROFILE.name.toUpperCase(), textCenter, 22, {align:'center'});
+  doc.text(COMPANY_PROFILE.name.toUpperCase(), pageWidth/2, 22, {align:'center'});
 
   // Tagline — centered on text area (right side)
   setPdfColor(doc,'setTextColor',PDF_BRAND.orange);
