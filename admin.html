@@ -1447,7 +1447,7 @@ function pdfCompanyHeader(doc, title){
   // Tagline — centered on text area (right side)
   setPdfColor(doc,'setTextColor',PDF_BRAND.orange);
   doc.setFontSize(8); doc.setFont('helvetica','bolditalic');
-  doc.text(COMPANY_PROFILE.tagline, textCenter, 28.5, {align:'center'});
+  doc.text('Supreme Insect Protection Systems', textCenter, 28.5, {align:'center'});
 
   // Company details box — full width, same as Mydoc
   setPdfColor(doc,'setFillColor',PDF_BRAND.sky);
