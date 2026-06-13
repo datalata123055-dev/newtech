@@ -1442,7 +1442,7 @@ function pdfCompanyHeader(doc, title){
   // Company name — centered on full page width
   setPdfColor(doc,'setTextColor',PDF_BRAND.navy);
   doc.setFontSize(15); doc.setFont('helvetica','bold');
-  doc.text(COMPANY_PROFILE.name.toUpperCase(), pageWidth/2, 22, {align:'center'});
+  doc.text(COMPANY_PROFILE.name.toUpperCase(), textCenter, 22, {align:'center'});
 
   // Tagline — centered on text area (right side)
   setPdfColor(doc,'setTextColor',PDF_BRAND.orange);
