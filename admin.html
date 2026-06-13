@@ -1412,60 +1412,83 @@ function withPdfOpacity(doc, opacity, callback){
   callback();
 }
 
-function pdfCompanyHeader(doc, title){
-  const pageWidth=doc.internal.pageSize.getWidth(); const margin=10;
-  setPdfColor(doc,'setFillColor',PDF_BRAND.navy);
-  doc.rect(0,0,pageWidth,13,'F');
-  setPdfColor(doc,'setFillColor',PDF_BRAND.orange);
-  doc.rect(0,13,pageWidth,2.2,'F');
-  doc.setFontSize(10.5); doc.setFont('helvetica','bold');
-  setPdfColor(doc,'setTextColor',PDF_BRAND.white);
-  doc.text(title, pageWidth/2, 8.5, {align:'center'});
+async function pdfHeader(doc, title) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 10;
 
-  // Header layout: logo panel (left) + company info (right) — same as Mydoc
-  const logoAreaWidth=52;
-  const textAreaX=margin+logoAreaWidth;
-  const textAreaWidth=pageWidth-margin-textAreaX;
-  const textCenter=textAreaX+(textAreaWidth/2);
+  // Title bar
+  setPdfColor(doc, "setFillColor", PDF_BRAND.navy);
+  doc.rect(0, 0, pageWidth, 13, "F");
+  setPdfColor(doc, "setFillColor", PDF_BRAND.orange);
+  doc.rect(0, 13, pageWidth, 2.2, "F");
+  doc.setFontSize(10.5);
+  doc.setFont("helvetica", "bold");
+  setPdfColor(doc, "setTextColor", PDF_BRAND.white);
+  doc.text(title, pageWidth / 2, 8.5, { align: "center" });
 
-  // Logo — bigger, vertically centered in header area
-  const logo=getLogoBase64();
-  if(logo){
-    const maxW=20, maxH=15;
-    const scale=Math.min(maxW/logo.w, maxH/logo.h);
-    const lw=logo.w*scale, lh=logo.h*scale;
-    const logoX=margin+(logoAreaWidth-lw)/2;
-    const logoY=18+(12-lh)/2;
-    try{ doc.addImage(logo.data,'PNG',logoX,logoY,lw,lh); }catch(e){}
+  // Logo — left side, properly sized, above the details box
+  const logo = await getLogoDataUrl();
+  if (logo) {
+    try {
+      const dimensions = pdfImageDimensions(doc, logo, 38, 13);
+      const logoX = margin + 1;
+      const logoY = 17;
+      doc.addImage(logo, "PNG", logoX, logoY, dimensions.width, dimensions.height);
+    } catch (error) {
+      console.warn("Could not add PDF logo", error);
+    }
   }
 
   // Company name — centered on full page width
-  setPdfColor(doc,'setTextColor',PDF_BRAND.navy);
-  doc.setFontSize(15); doc.setFont('helvetica','bold');
-  doc.text(COMPANY_PROFILE.name.toUpperCase(), pageWidth/2, 22, {align:'center'});
+  setPdfColor(doc, "setTextColor", PDF_BRAND.navy);
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text(COMPANY_PROFILE.name.toUpperCase(), pageWidth / 2, 22, { align: "center" });
 
-  // Tagline — centered on text area (right side)
-  setPdfColor(doc,'setTextColor',PDF_BRAND.orange);
-  doc.setFontSize(8); doc.setFont('helvetica','bolditalic');
-  doc.text('Supreme Insect Protection Systems', pageWidth/2, 28.5, {align:'center'});
+  // Tagline — centered on full page width
+  setPdfColor(doc, "setTextColor", PDF_BRAND.orange);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bolditalic");
+  doc.text(COMPANY_PROFILE.tagline, pageWidth / 2, 26.5, { align: "center" });
 
-  // Company details box — full width, same as Mydoc
-  setPdfColor(doc,'setFillColor',PDF_BRAND.sky);
-  setPdfColor(doc,'setDrawColor',PDF_BRAND.line);
-  doc.roundedRect(margin,30,pageWidth-margin*2,17.5,2,2,'FD');
-  const fullCenter=pageWidth/2;
-  setPdfColor(doc,'setTextColor',PDF_BRAND.ink);
-  doc.setFontSize(7.3); doc.setFont('helvetica','normal');
-  doc.text('Office : '+COMPANY_PROFILE.officeAddress, fullCenter, 35, {align:'center'});
-  doc.text('Factory : '+COMPANY_PROFILE.address, fullCenter, 38.8, {align:'center'});
-  doc.text('Email : '+COMPANY_PROFILE.email+'   |   Website : '+COMPANY_PROFILE.website, fullCenter, 42.6, {align:'center'});
-  doc.text('Contact Number : '+COMPANY_PROFILE.contacts.join(', ')+'   |   Our GST : '+COMPANY_PROFILE.gstNumber, fullCenter, 46.4, {align:'center'});
+  // Company details box — full width, properly below logo & name
+  setPdfColor(doc, "setFillColor", PDF_BRAND.sky);
+  setPdfColor(doc, "setDrawColor", PDF_BRAND.line);
+  doc.roundedRect(margin, 30, pageWidth - margin * 2, 17.5, 2, 2, "FD");
+  const fullCenter = pageWidth / 2;
+  setPdfColor(doc, "setTextColor", PDF_BRAND.ink);
+  doc.setFontSize(7.3);
+  doc.setFont("helvetica", "normal");
+  doc.text("Office : " + COMPANY_PROFILE.officeAddress, fullCenter, 34, { align: "center" });
+  doc.text("Factory : " + COMPANY_PROFILE.address, fullCenter, 37.8, { align: "center" });
+  doc.text("Email : " + COMPANY_PROFILE.email + "   |   Website : " + COMPANY_PROFILE.website, fullCenter, 41.6, { align: "center" });
+  doc.text("Contact Number : " + COMPANY_PROFILE.contacts.join(", ") + "   |   Our GST : " + COMPANY_PROFILE.gstNumber, fullCenter, 45.4, { align: "center" });
 
-  setPdfColor(doc,'setDrawColor',PDF_BRAND.orange);
-  doc.setLineWidth(0.7); doc.line(margin, 51, pageWidth-margin, 51);
-  doc.setTextColor(0,0,0);
-  return 53;
+  setPdfColor(doc, "setDrawColor", PDF_BRAND.orange);
+  doc.setLineWidth(0.7);
+  doc.line(margin, 50, pageWidth - margin, 50);
+  doc.setTextColor(0, 0, 0);
+  return 52;
 }
+
+function pdfImageDimensions(doc, dataUrl, maxWidth, maxHeight) {
+  const properties = doc.getImageProperties(dataUrl);
+  const scale = Math.min(maxWidth / properties.width, maxHeight / properties.height);
+  return {
+    width: properties.width * scale,
+    height: properties.height * scale
+  };
+}
+
+async function getLogoDataUrl() {
+  // Convert logo base64 to data URL if available
+  const logoBase64 = getLogoBase64();
+  if (logoBase64) {
+    return "data:image/png;base64," + logoBase64;
+  }
+  return null;
+}
+
 
 
 function pdfProductRows(products=[]){
@@ -1502,13 +1525,13 @@ function getPdfTableFinalY(doc, fallbackY){
   return doc.lastAutoTable?.finalY || doc.autoTable?.previous?.finalY || fallbackY;
 }
 
-function buildQuotationPdf(q){
+async function buildQuotationPdf(q){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
   const pw=doc.internal.pageSize.getWidth(); const ph=doc.internal.pageSize.getHeight();
   const lm=10;
 
-  let y=pdfCompanyHeader(doc,'QUOTATION');
+  let y=await pdfHeader(doc,'QUOTATION');
 
   // ── Customer + Quote info box ──
   const leftW=108, rightW=82, boxH=32;
@@ -1651,7 +1674,7 @@ function buildQuotationPdf(q){
 }
 
 
-function buildInvoicePdf(inv){
+async function buildInvoicePdf(inv){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
   const pw=doc.internal.pageSize.getWidth();
@@ -1670,7 +1693,7 @@ function buildInvoicePdf(inv){
   const roundoff=Math.round(grandTotal)-grandTotal;
   const totalQty=products.reduce((s,p)=>s+num(p.quantity),0);
 
-  let y=pdfCompanyHeader(doc,'TAX INVOICE');
+  let y=await pdfHeader(doc,'TAX INVOICE');
 
   // Customer + Invoice info box
   const leftW=108, rightW=tw-leftW, boxH=32;
