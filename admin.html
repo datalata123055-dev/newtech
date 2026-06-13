@@ -871,6 +871,7 @@ function escapeAttr(v){return escapeHtml(v).replace(/'/g,'&#39;');}
 // ─── Professional Quotation Generator ────────────────────────────
 const COMPANY_PROFILE = {
   name:'NewTech Home Solutions',
+  tagline:'Supreme Insect Protection Systems',
   logo:'assets/logo.png',
   address:'F-1, Hari Nagar II, Near Eco Park & Lohia Pull, Badarpur, New Delhi - 110044',
   officeAddress:'D-4/2, Okhla Industrial Area, Phase-1, New Delhi - 110020',
@@ -1619,7 +1620,7 @@ async function pdfHeader(doc, title) {
   setPdfColor(doc, "setTextColor", PDF_BRAND.orange);
   doc.setFontSize(8);
   doc.setFont("helvetica", "bolditalic");
-  doc.text(COMPANY_PROFILE.tagline, pageWidth / 2, 26.5, { align: "center" });
+  doc.text(String(COMPANY_PROFILE.tagline || ""), pageWidth / 2, 26.5, { align: "center" });
 
   // Company details box — full width, properly below logo & name
   setPdfColor(doc, "setFillColor", PDF_BRAND.sky);
