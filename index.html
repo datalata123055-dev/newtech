@@ -349,6 +349,51 @@
   .review-card p{color:#4b5563;line-height:1.75;margin-bottom:18px;}
   .review-card strong{display:block;color:var(--navy);font-size:16px;margin-bottom:4px;}
   .review-card span{color:var(--gray);font-size:13px;}
+  .review-photo-thumb{
+    width:76px;height:76px;border-radius:14px;overflow:hidden;
+    border:2px solid rgba(249,115,22,.2);margin-top:16px;cursor:pointer;
+  }
+  .review-photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .review-form{
+    max-width:640px;margin:46px auto 0;background:#fff;border:1px solid rgba(249,115,22,.16);
+    border-radius:22px;padding:30px;box-shadow:0 14px 38px rgba(30,58,138,.08);
+  }
+  .review-form h3{text-align:center;color:var(--navy);font-size:24px;margin-bottom:8px;}
+  .review-form .form-note{text-align:center;color:var(--gray);font-size:14px;margin-bottom:24px;}
+  .review-form-group{margin-bottom:18px;}
+  .review-form-group label{display:block;font-weight:700;color:var(--navy);font-size:14px;margin-bottom:8px;}
+  .review-form-group input,.review-form-group textarea{
+    width:100%;border:1.5px solid #e2e8f0;border-radius:12px;padding:13px 15px;
+    font-family:inherit;font-size:14px;background:#fff;transition:all .2s;
+  }
+  .review-form-group textarea{min-height:110px;resize:vertical;line-height:1.6;}
+  .review-form-group input:focus,.review-form-group textarea:focus{
+    outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.1);
+  }
+  .review-stars-input{display:flex;gap:10px;font-size:28px;}
+  .review-stars-input button{
+    border:0;background:transparent;color:#cbd5e1;padding:0;line-height:1;cursor:pointer;
+    font:inherit;font-size:30px;transition:transform .2s,color .2s;
+  }
+  .review-stars-input button:hover{transform:scale(1.14);}
+  .review-stars-input button.active{color:#f59e0b;}
+  .review-upload-zone{
+    position:relative;border:2px dashed #e2e8f0;border-radius:14px;padding:20px;text-align:center;
+    color:#64748b;font-weight:600;font-size:13px;transition:all .2s;min-height:118px;
+    display:grid;place-items:center;overflow:hidden;
+  }
+  .review-upload-zone.has-file{border-color:var(--orange);background:rgba(249,115,22,.05);}
+  .review-upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+  .review-upload-prompt span{display:block;font-size:24px;margin-bottom:8px;}
+  .review-preview{display:none;align-items:center;gap:12px;text-align:left;}
+  .review-preview img{width:76px;height:76px;object-fit:cover;border-radius:12px;border:2px solid var(--orange);}
+  .review-submit-btn{
+    width:100%;border:0;border-radius:12px;padding:14px;background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+    color:#fff;font-weight:800;font-size:15px;font-family:inherit;cursor:pointer;
+    box-shadow:0 8px 22px rgba(249,115,22,.28);transition:all .25s;
+  }
+  .review-submit-btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(249,115,22,.36);}
+  .review-submit-btn:disabled{opacity:.72;cursor:not-allowed;transform:none;}
 
   /* CTA */
   .cta-section{
@@ -707,6 +752,45 @@
       <span>New Delhi</span>
     </div>
   </div>
+  <div class="review-form fade-up" id="reviewFormCard">
+    <h3>Share Your Experience</h3>
+    <p class="form-note">Your review will appear after admin approval.</p>
+    <form id="reviewForm">
+      <div class="review-form-group">
+        <label for="reviewName">Your Name *</label>
+        <input type="text" id="reviewName" placeholder="Enter your name" required>
+      </div>
+      <div class="review-form-group">
+        <label>Rating *</label>
+        <div class="review-stars-input" id="reviewStarsInput" aria-label="Review rating">
+          <button type="button" class="active" data-rating="1" aria-label="1 star">★</button>
+          <button type="button" class="active" data-rating="2" aria-label="2 stars">★</button>
+          <button type="button" class="active" data-rating="3" aria-label="3 stars">★</button>
+          <button type="button" class="active" data-rating="4" aria-label="4 stars">★</button>
+          <button type="button" class="active" data-rating="5" aria-label="5 stars">★</button>
+        </div>
+      </div>
+      <div class="review-form-group">
+        <label for="reviewText">Your Review *</label>
+        <textarea id="reviewText" placeholder="Share your experience with us..." required></textarea>
+      </div>
+      <div class="review-form-group">
+        <label for="reviewPhotoFile">Upload Photo (optional)</label>
+        <div class="review-upload-zone" id="reviewUploadZone">
+          <input type="file" id="reviewPhotoFile" accept="image/*">
+          <div class="review-upload-prompt" id="reviewUploadPrompt">
+            <span>📸</span>
+            Click or tap to upload a photo of our work
+          </div>
+          <div class="review-preview" id="reviewPhotoPreview">
+            <img src="" alt="Review photo preview" id="reviewPreviewImg">
+            <div>Photo selected<br><small>It will be sent with your review.</small></div>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="review-submit-btn" id="reviewSubmitBtn">Submit Your Review</button>
+    </form>
+  </div>
 </section>
 
 <!-- CTA -->
@@ -841,6 +925,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 <script>
   // Firebase Config
   const firebaseConfig = {
@@ -856,6 +941,7 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
   const auth = firebase.auth();
+  const storage = firebase.storage ? firebase.storage() : null;
 
   // Mobile menu
   const hamburger = document.getElementById('hamburger');
@@ -1034,16 +1120,140 @@
       const text = escapeHtml(item.text || item.review || item.message || 'Excellent service and product quality.');
       const name = escapeHtml(item.name || 'New Tech Customer');
       const location = escapeHtml(item.location || item.city || 'Delhi NCR');
+      const photo = item.photo || item.photoUrl || '';
       return `
         <div class="review-card fade-up visible">
           <div class="review-stars">${stars}</div>
           <p>"${text}"</p>
           <strong>${name}</strong>
           <span>${location}</span>
+          ${photo ? `<div class="review-photo-thumb" onclick="window.open('${escapeAttr(photo)}','_blank')"><img src="${escapeAttr(photo)}" alt="${escapeAttr(name)} review photo"></div>` : ''}
         </div>`;
     }).join('');
     document.querySelectorAll('.review-card.fade-up').forEach(el => observer.observe(el));
   }
+
+  let currentReviewRating = 5;
+
+  function setReviewRating(rating) {
+    currentReviewRating = Math.max(1, Math.min(5, Number(rating) || 5));
+    document.querySelectorAll('#reviewStarsInput button').forEach((button, index) => {
+      button.classList.toggle('active', index < currentReviewRating);
+    });
+  }
+
+  document.getElementById('reviewStarsInput')?.addEventListener('click', event => {
+    const button = event.target.closest('button[data-rating]');
+    if (button) setReviewRating(button.dataset.rating);
+  });
+
+  document.getElementById('reviewPhotoFile')?.addEventListener('change', event => {
+    const file = event.target.files && event.target.files[0];
+    const preview = document.getElementById('reviewPhotoPreview');
+    const img = document.getElementById('reviewPreviewImg');
+    const prompt = document.getElementById('reviewUploadPrompt');
+    const zone = document.getElementById('reviewUploadZone');
+    if (!file || !preview || !img || !prompt || !zone) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      img.src = e.target.result;
+      preview.style.display = 'flex';
+      prompt.style.display = 'none';
+      zone.classList.add('has-file');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  async function compressReviewPhoto(file, maxKB = 130) {
+    if (!file || !file.type || !file.type.startsWith('image/') || !HTMLCanvasElement.prototype.toBlob) return file;
+    return new Promise(resolve => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const maxSide = 1400;
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        let quality = 0.82;
+        const attempt = () => {
+          canvas.toBlob(blob => {
+            if (!blob) { resolve(file); return; }
+            if (blob.size <= maxKB * 1024 || quality <= 0.22) {
+              resolve(blob);
+            } else {
+              quality = Math.max(0.22, quality - 0.12);
+              attempt();
+            }
+          }, 'image/webp', quality);
+        };
+        attempt();
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(file);
+      };
+      img.src = url;
+    });
+  }
+
+  async function uploadReviewPhoto(file) {
+    if (!file || !storage) return '';
+    try {
+      const uploadFile = await compressReviewPhoto(file);
+      const ext = uploadFile.type === 'image/webp' ? 'webp' : (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const ref = storage.ref().child(`reviews/${fileName}`);
+      const snapshot = await withTimeout(ref.put(uploadFile), 15000, 'Review photo upload');
+      return snapshot.ref.getDownloadURL();
+    } catch (err) {
+      console.warn('Review photo upload skipped:', err.message);
+      return '';
+    }
+  }
+
+  document.getElementById('reviewForm')?.addEventListener('submit', async event => {
+    event.preventDefault();
+    const btn = document.getElementById('reviewSubmitBtn');
+    const name = document.getElementById('reviewName').value.trim();
+    const text = document.getElementById('reviewText').value.trim();
+    const file = document.getElementById('reviewPhotoFile').files[0];
+    const original = btn.textContent;
+    if (!name || !text) return;
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+    try {
+      await ensureFirebaseWriteAccess();
+      let photo = '';
+      if (file) {
+        btn.textContent = 'Uploading photo...';
+        photo = await uploadReviewPhoto(file);
+      }
+      btn.textContent = 'Saving review...';
+      await withTimeout(db.collection('reviews').add({
+        name,
+        text,
+        rating: currentReviewRating,
+        photo,
+        status: 'pending',
+        source: 'public-site',
+        createdAt: new Date().toISOString()
+      }), 12000, 'Review submission');
+      document.getElementById('reviewFormCard').innerHTML = `
+        <div style="text-align:center;padding:28px 12px;">
+          <div style="font-size:46px;margin-bottom:14px;">★</div>
+          <h3 style="color:var(--navy);margin-bottom:10px;">Thank You, ${escapeHtml(name)}!</h3>
+          <p style="color:#64748b;line-height:1.7;">Your review has been submitted for moderation. It will appear on the site after admin approval.</p>
+          <button type="button" class="review-submit-btn" style="margin-top:22px;max-width:260px;" onclick="location.reload()">Submit Another Review</button>
+        </div>`;
+    } catch (err) {
+      alert('Could not submit review: ' + err.message);
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  });
 
   db.collection('reviews')
     .where('status', '==', 'active')
