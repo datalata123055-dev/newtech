@@ -329,15 +329,43 @@ function generateOfflineDocumentNumber(key){
   return formatDocumentNumber(key, nextOfflineDocumentSequence(key, year), year, true);
 }
 
+function extractDocumentSequence(key, value, year){
+  const text = String(value || '');
+  if(text.includes('-OFF-') || text.includes('/OFF-')) return 0;
+  let match = null;
+  if(key === 'quotations') match = text.match(new RegExp('^NTHS-' + year + '-(\\d+)$'));
+  if(key === 'invoices') match = text.match(new RegExp('^' + year + '-' + String(year + 1).slice(2) + '/(\\d+)$'));
+  if(key === 'warrantyCards') match = text.match(new RegExp('^WC-' + year + '-(\\d+)$'));
+  return match ? Number(match[1] || 0) : 0;
+}
+
+function maxLocalDocumentSequence(key, year){
+  const field = documentNumberField(key);
+  return (db[key] || []).reduce((max, row) => Math.max(max, extractDocumentSequence(key, row[field], year)), 0);
+}
+
+async function maxRemoteDocumentSequence(key, year){
+  const field = documentNumberField(key);
+  if(!field) return 0;
+  try{
+    const snap = await fstore.collection(key).limit(500).get();
+    return snap.docs.reduce((max, doc) => Math.max(max, extractDocumentSequence(key, doc.data()[field], year)), 0);
+  }catch(e){
+    console.warn('Could not read existing document numbers:', e.message);
+    return 0;
+  }
+}
+
 async function reserveDocumentNumber(key){
   if(!navigator.onLine) return null;
   await ensureFirebaseUser();
   const year = new Date().getFullYear();
   const counterRef = fstore.collection('documentCounters').doc(`${key}-${year}`);
+  const existingMax = Math.max(maxLocalDocumentSequence(key, year), await maxRemoteDocumentSequence(key, year));
   return fstore.runTransaction(async tx => {
     const snap = await tx.get(counterRef);
     const current = snap.exists ? Number(snap.data().next || 1) : 1;
-    const sequence = current > 0 ? current : 1;
+    const sequence = Math.max(current > 0 ? current : 1, existingMax + 1);
     tx.set(counterRef, {collection:key, year, next:sequence + 1, updatedAt:firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
     return formatDocumentNumber(key, sequence, year, false);
   });
@@ -1023,8 +1051,8 @@ function generateQuotationNumber(){
   if(!navigator.onLine) return generateOfflineDocumentNumber('quotations');
   const d = new Date();
   const y = d.getFullYear();
-  const count = (db.quotations||[]).filter(q => String(q.quotationNumber||'').includes('NTHS-'+y)).length + 1;
-  return `NTHS-${y}-${String(count).padStart(4,'0')}`;
+  const next = maxLocalDocumentSequence('quotations', y) + 1;
+  return `NTHS-${y}-${String(next).padStart(4,'0')}`;
 }
 function emptyQuoteProduct(){return {category:'',productName:'',width:0,height:0,unit:'Sq Ft',quantity:1,rateSqFt:0,rateSqMeter:0,installationCharge:0,deliveryCharge:0,discount:0,notes:''};}
 function calculateItem(item){
@@ -1283,19 +1311,16 @@ function generateInvoiceNumber(){
   const y = d.getFullYear();
   const ny = y + 1;
   const prefix = y + '-' + String(ny).slice(2);
-  const count = (db.invoices||[]).filter(inv => {
-    const num = String(inv.invoiceNumber||'');
-    return num.startsWith(prefix) || num.includes('INV-'+y);
-  }).length + 1;
-  return prefix + '/' + String(count).padStart(3,'0');
+  const next = maxLocalDocumentSequence('invoices', y) + 1;
+  return prefix + '/' + String(next).padStart(3,'0');
 }
 
 function generateWarrantySerial(){
   if(!navigator.onLine) return generateOfflineDocumentNumber('warrantyCards');
   const d = new Date();
   const y = d.getFullYear();
-  const count = (db.warrantyCards||[]).filter(wc => String(wc.serialNo||'').includes('WC-'+y)).length + 1;
-  return `WC-${y}-${String(count).padStart(4,'0')}`;
+  const next = maxLocalDocumentSequence('warrantyCards', y) + 1;
+  return `WC-${y}-${String(next).padStart(4,'0')}`;
 }
 
 function openInvoiceBuilder(id=null){
