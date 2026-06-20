@@ -335,6 +335,21 @@
     opacity:0.5;cursor:not-allowed;transform:none;
   }
 
+  /* REVIEWS */
+  .reviews{background:#fff;}
+  .reviews-grid{
+    max-width:1280px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;
+  }
+  .review-card{
+    background:var(--light);border:1px solid #e5e7eb;border-radius:22px;
+    padding:26px;box-shadow:0 10px 30px rgba(30,58,138,.06);
+  }
+  .review-stars{color:var(--orange);font-size:20px;letter-spacing:2px;margin-bottom:14px;}
+  .review-card p{color:#4b5563;line-height:1.75;margin-bottom:18px;}
+  .review-card strong{display:block;color:var(--navy);font-size:16px;margin-bottom:4px;}
+  .review-card span{color:var(--gray);font-size:13px;}
+
   /* CTA */
   .cta-section{
     background:linear-gradient(135deg,var(--navy),var(--navy-dark));
@@ -510,6 +525,7 @@
       <li><a href="#about">About</a></li>
       <li><a href="#products">Services</a></li>
       <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#reviews">Reviews</a></li>
       <li><a href="#careers">Careers</a></li>
       <li><a href="#contact">Contact</a></li>
       <li class="mobile-only" style="margin-top:8px;">
@@ -670,6 +686,29 @@
   </div>
 </section>
 
+<!-- REVIEWS -->
+<section class="reviews" id="reviews">
+  <div class="section-header fade-up">
+    <div class="section-label">Customer Reviews</div>
+    <h2>What Our <span style="color:var(--orange)">Customers Say</span></h2>
+    <p>Real feedback from New Tech Home Solutions customers.</p>
+  </div>
+  <div class="reviews-grid" id="reviewsGrid">
+    <div class="review-card fade-up visible">
+      <div class="review-stars">★★★★★</div>
+      <p>"Excellent quality and professional installation. Highly recommended."</p>
+      <strong>New Tech Customer</strong>
+      <span>Delhi NCR</span>
+    </div>
+    <div class="review-card fade-up visible">
+      <div class="review-stars">★★★★★</div>
+      <p>"Great service, clean fitting and responsive team."</p>
+      <strong>New Tech Customer</strong>
+      <span>New Delhi</span>
+    </div>
+  </div>
+</section>
+
 <!-- CTA -->
 <section class="cta-section">
   <h2>Ready to Protect Your Home?</h2>
@@ -703,7 +742,7 @@
       <p>Have questions about our products or need a custom quote? Reach us directly. We respond within 24 hours!</p>
       <div class="contact-item">
         <div class="contact-icon">📍</div>
-        <div><h4>Location</h4><p>F-1, Hari Nagar II, Near Eco Park, South Delhi Delhi, India</p></div>
+        <div><h4>Location</h4><p>E-386 Vashist Farm, Hari Nagar Part 2, Badarpur, New Delhi - 110044<br>Near Earth Nursery</p></div>
       </div>
       <div class="contact-item">
         <div class="contact-icon">📞</div>
@@ -776,6 +815,7 @@
       <a href="#about">About Us</a>
       <a href="#products">Services</a>
       <a href="#gallery">Gallery</a>
+      <a href="#reviews">Reviews</a>
       <a href="#careers">Careers</a>
       <a href="#contact">Contact</a>
     </div>
@@ -788,7 +828,7 @@
     </div>
     <div class="footer-col">
       <h4>Contact Info</h4>
-      <p>📍 South Delhi, India</p>
+      <p>📍 E-386 Vashist Farm, Hari Nagar Part 2, Badarpur, New Delhi - 110044<br>Near Earth Nursery</p>
       <p>📞 +91 9315739299</p>
       <p>✉️ homesolutionsnewtech@gmail.com</p>
     </div>
@@ -965,6 +1005,54 @@
     }, err => {
       console.warn('Gallery sync error:', err.message);
       document.getElementById('galleryGrid').innerHTML = staticGalleryCards;
+    });
+
+  const staticReviewCards = `
+    <div class="review-card fade-up visible">
+      <div class="review-stars">★★★★★</div>
+      <p>"Excellent quality and professional installation. Highly recommended."</p>
+      <strong>New Tech Customer</strong>
+      <span>Delhi NCR</span>
+    </div>
+    <div class="review-card fade-up visible">
+      <div class="review-stars">★★★★★</div>
+      <p>"Great service, clean fitting and responsive team."</p>
+      <strong>New Tech Customer</strong>
+      <span>New Delhi</span>
+    </div>`;
+
+  function renderReviews(items) {
+    const grid = document.getElementById('reviewsGrid');
+    if (!grid) return;
+    if (!items.length) {
+      grid.innerHTML = staticReviewCards;
+      return;
+    }
+    grid.innerHTML = items.map(item => {
+      const rating = Math.max(1, Math.min(5, Number(item.rating) || 5));
+      const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+      const text = escapeHtml(item.text || item.review || item.message || 'Excellent service and product quality.');
+      const name = escapeHtml(item.name || 'New Tech Customer');
+      const location = escapeHtml(item.location || item.city || 'Delhi NCR');
+      return `
+        <div class="review-card fade-up visible">
+          <div class="review-stars">${stars}</div>
+          <p>"${text}"</p>
+          <strong>${name}</strong>
+          <span>${location}</span>
+        </div>`;
+    }).join('');
+    document.querySelectorAll('.review-card.fade-up').forEach(el => observer.observe(el));
+  }
+
+  db.collection('reviews')
+    .where('status', '==', 'active')
+    .onSnapshot(snap => {
+      const reviews = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderReviews(reviews);
+    }, err => {
+      console.warn('Reviews sync error:', err.message);
+      renderReviews([]);
     });
 
   // Sync Careers
