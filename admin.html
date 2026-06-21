@@ -993,23 +993,24 @@ function escapeAttr(v){return escapeHtml(v).replace(/'/g,'&#39;');}
 // ─── Professional Quotation Generator ────────────────────────────
 const COMPANY_PROFILE = {
   name:'NewTech Home Solutions',
-  tagline:'Supreme Insect Protection Systems',
+  tagline:'Unit of NewTech Fly Screens',
   logo:'assets/logo.png',
   address:'E-386 Vashist Farm, Hari Nagar Part 2, Badarpur, New Delhi - 110044, Near Earth Nursery',
-  officeAddress:'E-386 Vashist Farm, Hari Nagar Part 2, Badarpur, New Delhi - 110044, Near Earth Nursery',
+  officeAddress:'F-1, Hari Nagar Part-2, Near Lohia Pull/Eco Park, Badarpur, New Delhi-110044',
   contacts:['+91 9315739299','+91 9354831931'],
   email:'homesolutionsnewtech@gmail.com',
-  website:'https://newtechhomesolutions.in',
+  website:'https://www.newtechflyscreens.in',
   gstNumber:'07AATFN5177C1ZY',
   terms:[
     'Minimum Chargeable area is 1.02 square meter or 11 Sq.Ft. for all products.',
     '50% advance to be paid along with order, balance after installation.',
-    'Cheques & NEFT to be issued in favor of NewTech Home Solutions.',
+    'Cheques & NEFT to be issued in favor of NewTech Fly Screens.',
     'Bank Details - AXIS BANK (IFSC - UTIB0000552) A/c No. 922020011452055',
     'Products once produced will neither be cancelled or exchanged or rectified.',
     'Calculation of Area of all products will be in SLAB of 6" for both Width & Height.',
     'Warranty for the period of 5 Years for Manufacturing defect except Net, from date of delivery.',
     '5 Years Guarantee of Mesh for Natural climate wear-tear only.',
+    'Nominal amt. of Rs.500/- would be charged as Visit charge for improper cleaning complaints or any physical damages.',
     'All disputes subject to Delhi Jurisdiction.'
   ],
   warranty:[
@@ -1017,11 +1018,11 @@ const COMPANY_PROFILE = {
     '5 Years Guarantee of Mesh for Natural climate wear-tear only.'
   ],
   invoiceTerms:[
-    'Cheques & NEFT to be issued in favor of NewTech Home Solutions.',
+    'Cheques & NEFT to be issued in favor of NewTech Fly Screens.',
     'Products once produced will neither be cancelled or exchanged or rectified.',
     'Bank Details - AXIS BANK (IFSC - UTIB0000552) A/c No. 922020011452055',
     'Warranty for the period of 5 years for Manufacturing defect except Net, (For Pleated Mesh Only).',
-    'Nominal amount of Rs. 500/- would be charged as technician visit, during warranty period.',
+    'Nominal amt. of Rs.500/- would be charged as Visit charge for improper cleaning complaints or any physical damages.',
     '24% interest would be charged extra for delay payment.',
     'All disputes subject to Delhi Jurisdiction.'
   ],
@@ -1042,10 +1043,50 @@ const COMPANY_PROFILE = {
 const QUOTE_CATEGORIES = ['Roller Blinds','Zebra Blinds','Wooden Blinds','Printed Blinds','Polyester Pleated Mesh','SS304 Pleated Mesh','Honeycomb Blackout','2 in 1 Pleated Mesh + Honeycomb','PVC Partition','Crystal Partition Door','Security Mesh'];
 const QUOTE_UNITS = ['Sq Ft','Sq Meter','CM','MM'];
 const TAX_OPTIONS = [{label:'No Tax',value:0},{label:'GST 5%',value:5},{label:'GST 12%',value:12},{label:'GST 18%',value:18},{label:'Custom Tax',value:'custom'}];
+const TAX_TYPE_OPTIONS = [{label:'IGST',value:'igst'},{label:'CGST + SGST',value:'cgst_sgst'},{label:'Self / Custom',value:'custom'}];
 
 function currency(n){const value = Number(n||0); return 'Rs. ' + value.toLocaleString('en-IN',{maximumFractionDigits:2});}
 function currency2(n){const value = Number(n||0); return value.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function num(v){return Number(v||0)||0;}
+function manualPaymentText(v){const text=String(v??'').trim(); return text || '/-';}
+function taxRateText(rate){
+  const n = num(rate);
+  return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/,'');
+}
+function documentTaxType(record){
+  return record?.taxType || record?.gstType || 'igst';
+}
+function taxSummaryLabel(record){
+  const rate = taxRateText(record?.taxRate);
+  const type = documentTaxType(record);
+  if(num(record?.taxRate) <= 0) return 'No Tax';
+  if(type === 'cgst_sgst') return `CGST + SGST (${rate}%)`;
+  if(type === 'custom' && String(record?.customTaxLabel || '').trim()) return String(record.customTaxLabel).trim();
+  return `IGST (${rate}%)`;
+}
+function taxRowsForDocument(record, columnCount){
+  const rate = num(record?.taxRate);
+  const taxAmt = num(record?.taxAmount) || num(record?.tax);
+  const type = documentTaxType(record);
+  const row = (label, amount) => {
+    const cells = Array(columnCount).fill('');
+    cells[1] = label;
+    cells[columnCount - 1] = currency2(amount);
+    return cells;
+  };
+  if(rate <= 0 || taxAmt <= 0) return [row('No Tax', 0)];
+  if(type === 'cgst_sgst'){
+    const halfRate = rate / 2;
+    const halfTax = taxAmt / 2;
+    return [
+      row('CGST @ ' + taxRateText(halfRate) + '%', halfTax),
+      row('SGST @ ' + taxRateText(halfRate) + '%', halfTax)
+    ];
+  }
+  const customLabel = String(record?.customTaxLabel || '').trim();
+  const label = type === 'custom' && customLabel ? customLabel : 'IGST @ ' + taxRateText(rate) + '%';
+  return [row(label, taxAmt)];
+}
 function todayISO(){return new Date().toISOString().slice(0,10);}
 function generateQuotationNumber(){
   if(!navigator.onLine) return generateOfflineDocumentNumber('quotations');
@@ -1103,10 +1144,11 @@ function quotationFromForm(){
     quotationDate:document.getElementById('qDate').value,
     customerDetails:{
       name:sanitize(document.getElementById('qCustomer').value),phone:sanitize(document.getElementById('qPhone').value),email:sanitize(document.getElementById('qEmail').value),
+      gstNo:sanitize(document.getElementById('qGstNo')?.value||''),installationTime:sanitize(document.getElementById('qInstallationTime')?.value||''),
       installationAddress:sanitize(document.getElementById('qAddress').value),city:sanitize(document.getElementById('qCity').value),state:sanitize(document.getElementById('qState').value),country:sanitize(document.getElementById('qCountry').value),notes:sanitize(document.getElementById('qNotes').value)
     },
     customerName:sanitize(document.getElementById('qCustomer').value),phone:sanitize(document.getElementById('qPhone').value),email:sanitize(document.getElementById('qEmail').value),
-    products,discount:num(document.getElementById('qExtraDiscount').value),signatory:document.getElementById('qSignatory')?.value||'',taxMode:document.getElementById('qTaxMode').value,customTaxRate:num(document.getElementById('qCustomTax').value),status:document.getElementById('qStatus').value,
+    products,discount:num(document.getElementById('qExtraDiscount').value),advanceAmount:sanitize(document.getElementById('qAdvance')?.value||''),outstandingAmount:sanitize(document.getElementById('qOutstanding')?.value||''),signatory:document.getElementById('qSignatory')?.value||'',taxMode:document.getElementById('qTaxMode').value,taxType:document.getElementById('qTaxType')?.value||'igst',customTaxRate:num(document.getElementById('qCustomTax').value),customTaxLabel:sanitize(document.getElementById('qCustomTaxLabel')?.value||''),status:document.getElementById('qStatus').value,
     companyProfile:COMPANY_PROFILE,futureWorkflow:{customerApproval:false,projectCreated:false,workerAssigned:false,installationTracking:false},pdfUrl:''
   };
   return calculateQuotation(q);
@@ -1201,18 +1243,25 @@ function productRowHtml(item={},i=0,refreshFn='refreshQuoteTotals'){
 }
 function openQuotationBuilder(id){
   const existing = id ? (db.quotations||[]).find(q=>q.id===id) : null;
-  const q = existing || {quotationNumber:generateQuotationNumber(),quotationDate:todayISO(),customerDetails:{country:'India'},products:[],taxMode:18,status:'draft'};
+  const q = existing || {quotationNumber:generateQuotationNumber(),quotationDate:todayISO(),customerDetails:{country:'India',installationTime:'Within 4 working days'},products:[],taxMode:18,taxType:'igst',status:'draft'};
   document.getElementById('modal').classList.remove('hidden');
   document.getElementById('modal').innerHTML = `<div class="modal-card quote-builder"><div class="modal-head"><div><h2>${id?'Edit Existing':'Create New'} Quotation</h2><p class="muted">${COMPANY_PROFILE.name} branded quotation with automatic measurements, GST and PDF.</p></div><button class="icon-btn" onclick="closeModal()">✕</button></div>
   <div class="quote-section"><h3>Company Branding</h3><div style="display:flex;gap:14px;align-items:center"><img src="${COMPANY_PROFILE.logo}" alt="Logo" style="height:58px"><div><strong>${COMPANY_PROFILE.name}</strong><br><span class="muted">${COMPANY_PROFILE.address}<br>${COMPANY_PROFILE.contacts.join(' / ')} • ${COMPANY_PROFILE.email}</span></div></div></div>
-  <div class="quote-section"><h3>Customer Details</h3><div class="quote-grid"><div class="field"><label>Quotation Number</label><input id="qNumber" value="${escapeAttr(q.quotationNumber)}" readonly></div><div class="field"><label>Date</label><input id="qDate" type="date" value="${escapeAttr(q.quotationDate||todayISO())}" onchange="refreshQuoteTotals()"></div><div class="field"><label>Customer Name</label><input id="qCustomer" value="${escapeAttr(q.customerDetails?.name||q.customerName||'')}"></div><div class="field"><label>Phone Number</label><input id="qPhone" value="${escapeAttr(q.customerDetails?.phone||q.phone||'')}"></div><div class="field"><label>Email</label><input id="qEmail" type="email" value="${escapeAttr(q.customerDetails?.email||q.email||'')}"></div><div class="field"><label>City</label><input id="qCity" value="${escapeAttr(q.customerDetails?.city||'')}"></div><div class="field"><label>State</label><input id="qState" value="${escapeAttr(q.customerDetails?.state||'')}"></div><div class="field"><label>Country</label><input id="qCountry" value="${escapeAttr(q.customerDetails?.country||'India')}"></div><div class="field" style="grid-column:1/-1"><label>Installation Address</label><textarea id="qAddress">${escapeHtml(q.customerDetails?.installationAddress||'')}</textarea></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea id="qNotes">${escapeHtml(q.customerDetails?.notes||'')}</textarea></div></div></div>
+  <div class="quote-section"><h3>Customer Details</h3><div class="quote-grid"><div class="field"><label>Quotation Number</label><input id="qNumber" value="${escapeAttr(q.quotationNumber)}" readonly></div><div class="field"><label>Date</label><input id="qDate" type="date" value="${escapeAttr(q.quotationDate||todayISO())}" onchange="refreshQuoteTotals()"></div><div class="field"><label>Customer Name</label><input id="qCustomer" value="${escapeAttr(q.customerDetails?.name||q.customerName||'')}"></div><div class="field"><label>Phone Number</label><input id="qPhone" value="${escapeAttr(q.customerDetails?.phone||q.phone||'')}"></div><div class="field"><label>Email</label><input id="qEmail" type="email" value="${escapeAttr(q.customerDetails?.email||q.email||'')}"></div><div class="field"><label>GST No.</label><input id="qGstNo" value="${escapeAttr(q.customerDetails?.gstNo||q.gstNo||'')}"></div><div class="field"><label>Installation Day</label><input id="qInstallationTime" value="${escapeAttr(q.customerDetails?.installationTime||q.installationTime||'Within 4 working days')}"></div><div class="field"><label>City</label><input id="qCity" value="${escapeAttr(q.customerDetails?.city||'')}"></div><div class="field"><label>State</label><input id="qState" value="${escapeAttr(q.customerDetails?.state||'')}"></div><div class="field"><label>Country</label><input id="qCountry" value="${escapeAttr(q.customerDetails?.country||'India')}"></div><div class="field" style="grid-column:1/-1"><label>Installation Address</label><textarea id="qAddress">${escapeHtml(q.customerDetails?.installationAddress||'')}</textarea></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea id="qNotes">${escapeHtml(q.customerDetails?.notes||'')}</textarea></div></div></div>
   <div class="quote-section"><div class="quote-product-head"><h3>Product Section</h3><button class="btn btn-ghost" onclick="addQuoteProduct()">+ Add Product</button></div><div id="quoteProducts" class="quote-products">${(q.products||[]).map((item,i)=>productRowHtml(item,i)).join('')}</div></div>
-  <div class="quote-section"><h3>GST Module</h3><div class="quote-grid"><div class="field"><label>Tax/GST</label><select id="qTaxMode" onchange="toggleCustomTax();refreshQuoteTotals()">${TAX_OPTIONS.map(t=>`<option ${String(q.taxMode??18)===String(t.value)?'selected':''} value="${t.value}">${t.label}</option>`).join('')}</select></div><div class="field"><label>Custom Tax %</label><input id="qCustomTax" type="number" step="0.01" value="${escapeAttr(q.customTaxRate||0)}" oninput="refreshQuoteTotals()"></div><div class="field"><label>Quotation Discount</label><input id="qExtraDiscount" type="number" step="0.01" value="${escapeAttr(q.discount||0)}" oninput="refreshQuoteTotals()"></div><div class="field"><label>Authorized Signatory</label><input id="qSignatory" placeholder="Signatory name" value="${escapeAttr(q.signatory||COMPANY_PROFILE.name)}"></div><div class="field"><label>Status</label><select id="qStatus"><option value="draft" ${q.status==='draft'?'selected':''}>Draft</option><option value="sent" ${q.status==='sent'?'selected':''}>Sent</option><option value="approved" ${q.status==='approved'?'selected':''}>Approved</option><option value="converted" ${q.status==='converted'?'selected':''}>Converted to Project</option><option value="cancelled" ${q.status==='cancelled'?'selected':''}>Cancelled</option></select></div></div></div>
+  <div class="quote-section"><h3>GST Module</h3><div class="quote-grid"><div class="field"><label>GST Type</label><select id="qTaxType" onchange="toggleCustomTax();refreshQuoteTotals()">${TAX_TYPE_OPTIONS.map(t=>`<option ${String(q.taxType||'igst')===String(t.value)?'selected':''} value="${t.value}">${t.label}</option>`).join('')}</select></div><div class="field"><label>Tax/GST Rate</label><select id="qTaxMode" onchange="toggleCustomTax();refreshQuoteTotals()">${TAX_OPTIONS.map(t=>`<option ${String(q.taxMode??18)===String(t.value)?'selected':''} value="${t.value}">${t.label}</option>`).join('')}</select></div><div class="field"><label>Custom Tax %</label><input id="qCustomTax" type="number" step="0.01" value="${escapeAttr(q.customTaxRate||0)}" oninput="refreshQuoteTotals()"></div><div class="field"><label>Self Tax Label</label><input id="qCustomTaxLabel" placeholder="e.g. IGST @ 18%" value="${escapeAttr(q.customTaxLabel||'')}" oninput="refreshQuoteTotals()"></div><div class="field"><label>Quotation Discount</label><input id="qExtraDiscount" type="number" step="0.01" value="${escapeAttr(q.discount||0)}" oninput="refreshQuoteTotals()"></div><div class="field"><label>Advance</label><input id="qAdvance" value="${escapeAttr(q.advanceAmount||'')}"></div><div class="field"><label>Outstanding</label><input id="qOutstanding" value="${escapeAttr(q.outstandingAmount||'')}"></div><div class="field"><label>Authorized Signatory</label><input id="qSignatory" placeholder="Signatory name" value="${escapeAttr(q.signatory||COMPANY_PROFILE.name)}"></div><div class="field"><label>Status</label><select id="qStatus"><option value="draft" ${q.status==='draft'?'selected':''}>Draft</option><option value="sent" ${q.status==='sent'?'selected':''}>Sent</option><option value="approved" ${q.status==='approved'?'selected':''}>Approved</option><option value="converted" ${q.status==='converted'?'selected':''}>Converted to Project</option><option value="cancelled" ${q.status==='cancelled'?'selected':''}>Cancelled</option></select></div></div></div>
   <div class="quote-summary"><div class="quote-totals" id="quoteTotals"></div><div class="quote-actions"><button class="btn btn-ghost" onclick="saveQuotation('${id||''}','draft')">Save Draft</button><button class="btn btn-navy" onclick="previewCurrentQuotationPdf()">Print PDF</button><button class="btn btn-ghost" onclick="downloadCurrentQuotationPdf()">Download PDF</button><button class="btn btn-primary" onclick="saveQuotation('${id||''}',document.getElementById('qStatus').value)">${id?'Save Changes':'Save Quotation'}</button></div></div></div>`;
   toggleCustomTax(); refreshQuoteTotals();
 }
 function addQuoteProduct(){document.getElementById('quoteProducts').insertAdjacentHTML('beforeend',productRowHtml(emptyQuoteProduct(),document.querySelectorAll('.quote-product').length));refreshQuoteTotals();}
-function toggleCustomTax(){const el=document.getElementById('qCustomTax'); if(el) el.disabled=document.getElementById('qTaxMode').value!=='custom';}
+function toggleCustomTax(){
+  const el=document.getElementById('qCustomTax');
+  const mode=document.getElementById('qTaxMode');
+  if(el&&mode) el.disabled=mode.value!=='custom';
+  const label=document.getElementById('qCustomTaxLabel');
+  const type=document.getElementById('qTaxType');
+  if(label&&type) label.disabled=type.value!=='custom';
+}
 function refreshQuoteTotals(){
   // Live area recalculation for each product row
   document.querySelectorAll('#quoteProducts .quote-product').forEach(row=>{
@@ -1233,7 +1282,7 @@ function refreshQuoteTotals(){
     <div class="quote-total-row"><label>Products</label><span>${currency(q.productTotal)}</span></div>
     <div class="quote-total-row"><label>Install + Delivery</label><span>${currency(q.installation + q.delivery)}</span></div>
     <div class="quote-total-row"><label>Discount</label><span>${currency(q.discount)}</span></div>
-    <div class="quote-total-row"><label>Tax (${q.taxRate}%)</label><span>${currency(q.taxAmount)}</span></div>
+    <div class="quote-total-row"><label>${taxSummaryLabel(q)}</label><span>${currency(q.taxAmount)}</span></div>
     <div class="quote-total-row total"><label>Total</label><span>${currency(q.total)}</span></div>
   `;
 }
@@ -1325,12 +1374,12 @@ function generateWarrantySerial(){
 
 function openInvoiceBuilder(id=null){
   const existing = id ? (db.invoices||[]).find(inv=>inv.id===id) : null;
-  const inv = existing || {invoiceNumber:generateInvoiceNumber(),invoiceDate:todayISO(),customerDetails:{country:'India'},products:[],taxMode:18,status:'draft'};
+  const inv = existing || {invoiceNumber:generateInvoiceNumber(),invoiceDate:todayISO(),customerDetails:{country:'India',installationTime:'Within 4 working days'},products:[],taxMode:18,taxType:'cgst_sgst',status:'draft'};
   document.getElementById('modal').classList.remove('hidden');
   document.getElementById('modal').innerHTML = `<div class="modal-card quote-builder"><div class="modal-head"><div><h2>${id?'Edit Existing':'Create New'} Tax Invoice</h2><p class="muted">${COMPANY_PROFILE.name} branded tax invoice with automatic measurements, GST and PDF.</p></div><button class="icon-btn" onclick="closeModal()">✕</button></div>
-    <div class="quote-section"><h3>Customer Details</h3><div class="quote-grid"><div class="field"><label>Invoice Number</label><input id="invNumber" value="${escapeAttr(inv.invoiceNumber)}" readonly></div><div class="field"><label>Date</label><input id="invDate" type="date" value="${escapeAttr(inv.invoiceDate||todayISO())}" onchange="refreshInvoiceTotals()"></div><div class="field"><label>Customer Name</label><input id="invCustomer" value="${escapeAttr(inv.customerDetails?.name||inv.customerName||'')}"></div><div class="field"><label>Phone Number</label><input id="invPhone" value="${escapeAttr(inv.customerDetails?.phone||inv.phone||'')}"></div><div class="field"><label>Email</label><input id="invEmail" type="email" value="${escapeAttr(inv.customerDetails?.email||inv.email||'')}"></div><div class="field"><label>City</label><input id="invCity" value="${escapeAttr(inv.customerDetails?.city||'')}"></div><div class="field"><label>State</label><input id="invState" value="${escapeAttr(inv.customerDetails?.state||'')}"></div><div class="field"><label>Country</label><input id="invCountry" value="${escapeAttr(inv.customerDetails?.country||'India')}"></div><div class="field" style="grid-column:1/-1"><label>Installation Address</label><textarea id="invAddress">${escapeHtml(inv.customerDetails?.installationAddress||'')}</textarea></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea id="invNotes">${escapeHtml(inv.customerDetails?.notes||'')}</textarea></div></div></div>
+    <div class="quote-section"><h3>Customer Details</h3><div class="quote-grid"><div class="field"><label>Invoice Number</label><input id="invNumber" value="${escapeAttr(inv.invoiceNumber)}" readonly></div><div class="field"><label>Date</label><input id="invDate" type="date" value="${escapeAttr(inv.invoiceDate||todayISO())}" onchange="refreshInvoiceTotals()"></div><div class="field"><label>Customer Name</label><input id="invCustomer" value="${escapeAttr(inv.customerDetails?.name||inv.customerName||'')}"></div><div class="field"><label>Phone Number</label><input id="invPhone" value="${escapeAttr(inv.customerDetails?.phone||inv.phone||'')}"></div><div class="field"><label>Email</label><input id="invEmail" type="email" value="${escapeAttr(inv.customerDetails?.email||inv.email||'')}"></div><div class="field"><label>GST No.</label><input id="invGstNo" value="${escapeAttr(inv.customerDetails?.gstNo||inv.gstNo||'')}"></div><div class="field"><label>Installation Day</label><input id="invInstallationTime" value="${escapeAttr(inv.customerDetails?.installationTime||inv.installationTime||'Within 4 working days')}"></div><div class="field"><label>City</label><input id="invCity" value="${escapeAttr(inv.customerDetails?.city||'')}"></div><div class="field"><label>State</label><input id="invState" value="${escapeAttr(inv.customerDetails?.state||'')}"></div><div class="field"><label>Country</label><input id="invCountry" value="${escapeAttr(inv.customerDetails?.country||'India')}"></div><div class="field" style="grid-column:1/-1"><label>Installation Address</label><textarea id="invAddress">${escapeHtml(inv.customerDetails?.installationAddress||'')}</textarea></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea id="invNotes">${escapeHtml(inv.customerDetails?.notes||'')}</textarea></div></div></div>
     <div class="quote-section"><div class="quote-product-head"><h3>Product Section</h3><button class="btn btn-ghost" onclick="addInvoiceProduct()">+ Add Product</button></div><div id="invoiceProducts" class="quote-products">${(inv.products||[]).map((item,i)=>productRowHtml(item,i,'refreshInvoiceTotals')).join('')}</div></div>
-    <div class="quote-section"><h3>GST Module</h3><div class="quote-grid"><div class="field"><label>HSN/SAC Code</label><input id="invHsnSac" placeholder="e.g. 7314" value="${escapeAttr(inv.hsnSac||'7314')}"></div><div class="field"><label>Tax/GST</label><select id="invTaxMode" onchange="toggleCustomInvoiceTax();refreshInvoiceTotals()">${TAX_OPTIONS.map(t=>`<option ${String(inv.taxMode??18)===String(t.value)?'selected':''} value="${t.value}">${t.label}</option>`).join('')}</select></div><div class="field"><label>Custom Tax %</label><input id="invCustomTax" type="number" step="0.01" value="${escapeAttr(inv.customTaxRate||0)}" oninput="refreshInvoiceTotals()"></div><div class="field"><label>Invoice Discount</label><input id="invExtraDiscount" type="number" step="0.01" value="${escapeAttr(inv.discount||0)}" oninput="refreshInvoiceTotals()"></div><div class="field"><label>Authorized Signatory</label><input id="invSignatory" placeholder="Signatory name" value="${escapeAttr(inv.signatory||COMPANY_PROFILE.name)}"></div><div class="field"><label>Status</label><select id="invStatus"><option value="draft" ${inv.status==='draft'?'selected':''}>Draft</option><option value="paid" ${inv.status==='paid'?'selected':''}>Paid</option><option value="cancelled" ${inv.status==='cancelled'?'selected':''}>Cancelled</option></select></div></div></div>
+    <div class="quote-section"><h3>GST Module</h3><div class="quote-grid"><div class="field"><label>HSN/SAC Code</label><input id="invHsnSac" placeholder="e.g. 7314" value="${escapeAttr(inv.hsnSac||'7314')}"></div><div class="field"><label>GST Type</label><select id="invTaxType" onchange="toggleCustomInvoiceTax();refreshInvoiceTotals()">${TAX_TYPE_OPTIONS.map(t=>`<option ${String(inv.taxType||'cgst_sgst')===String(t.value)?'selected':''} value="${t.value}">${t.label}</option>`).join('')}</select></div><div class="field"><label>Tax/GST Rate</label><select id="invTaxMode" onchange="toggleCustomInvoiceTax();refreshInvoiceTotals()">${TAX_OPTIONS.map(t=>`<option ${String(inv.taxMode??18)===String(t.value)?'selected':''} value="${t.value}">${t.label}</option>`).join('')}</select></div><div class="field"><label>Custom Tax %</label><input id="invCustomTax" type="number" step="0.01" value="${escapeAttr(inv.customTaxRate||0)}" oninput="refreshInvoiceTotals()"></div><div class="field"><label>Self Tax Label</label><input id="invCustomTaxLabel" placeholder="e.g. IGST @ 18%" value="${escapeAttr(inv.customTaxLabel||'')}" oninput="refreshInvoiceTotals()"></div><div class="field"><label>Invoice Discount</label><input id="invExtraDiscount" type="number" step="0.01" value="${escapeAttr(inv.discount||0)}" oninput="refreshInvoiceTotals()"></div><div class="field"><label>Advance</label><input id="invAdvance" value="${escapeAttr(inv.advanceAmount||'')}"></div><div class="field"><label>Outstanding</label><input id="invOutstanding" value="${escapeAttr(inv.outstandingAmount||'')}"></div><div class="field"><label>Authorized Signatory</label><input id="invSignatory" placeholder="Signatory name" value="${escapeAttr(inv.signatory||COMPANY_PROFILE.name)}"></div><div class="field"><label>Status</label><select id="invStatus"><option value="draft" ${inv.status==='draft'?'selected':''}>Draft</option><option value="paid" ${inv.status==='paid'?'selected':''}>Paid</option><option value="cancelled" ${inv.status==='cancelled'?'selected':''}>Cancelled</option></select></div></div></div>
     <div class="quote-summary"><div class="quote-totals" id="invoiceTotals"></div><div class="quote-actions"><button class="btn btn-ghost" onclick="saveInvoice('${id||''}','draft')">Save Draft</button><button class="btn btn-navy" onclick="previewCurrentInvoicePdf()">Print PDF</button><button class="btn btn-ghost" onclick="downloadCurrentInvoicePdf()">Download PDF</button><button class="btn btn-primary" onclick="saveInvoice('${id||''}',document.getElementById('invStatus').value)">${id?'Save Changes':'Save Invoice'}</button></div></div></div>`;
   toggleCustomInvoiceTax(); refreshInvoiceTotals();
 }
@@ -1339,7 +1388,14 @@ function addInvoiceProduct(){
   document.getElementById('invoiceProducts').insertAdjacentHTML('beforeend', productRowHtml(emptyQuoteProduct(), document.querySelectorAll('#invoiceProducts .quote-product').length, 'refreshInvoiceTotals'));
   refreshInvoiceTotals();
 }
-function toggleCustomInvoiceTax(){const el=document.getElementById('invCustomTax'); if(el) el.disabled=document.getElementById('invTaxMode').value!=='custom';}
+function toggleCustomInvoiceTax(){
+  const el=document.getElementById('invCustomTax');
+  const mode=document.getElementById('invTaxMode');
+  if(el&&mode) el.disabled=mode.value!=='custom';
+  const label=document.getElementById('invCustomTaxLabel');
+  const type=document.getElementById('invTaxType');
+  if(label&&type) label.disabled=type.value!=='custom';
+}
 function formProducts(containerSelector){
   return [...document.querySelectorAll(`${containerSelector} .quote-product`)].map(row=>({
     category:row.querySelector('[data-q="category"]').value,
@@ -1364,10 +1420,11 @@ function invoiceFromForm(){
     invoiceDate:document.getElementById('invDate').value,
     customerDetails:{
       name:sanitize(document.getElementById('invCustomer').value),phone:sanitize(document.getElementById('invPhone').value),email:sanitize(document.getElementById('invEmail').value),
+      gstNo:sanitize(document.getElementById('invGstNo')?.value||''),installationTime:sanitize(document.getElementById('invInstallationTime')?.value||''),
       installationAddress:sanitize(document.getElementById('invAddress').value),city:sanitize(document.getElementById('invCity').value),state:sanitize(document.getElementById('invState').value),country:sanitize(document.getElementById('invCountry').value),notes:sanitize(document.getElementById('invNotes').value)
     },
     customerName:sanitize(document.getElementById('invCustomer').value),phone:sanitize(document.getElementById('invPhone').value),email:sanitize(document.getElementById('invEmail').value),
-    products,discount:num(document.getElementById('invExtraDiscount').value),signatory:document.getElementById('invSignatory')?.value||'',taxMode:document.getElementById('invTaxMode').value,customTaxRate:num(document.getElementById('invCustomTax').value),status:document.getElementById('invStatus').value,
+    products,discount:num(document.getElementById('invExtraDiscount').value),advanceAmount:sanitize(document.getElementById('invAdvance')?.value||''),outstandingAmount:sanitize(document.getElementById('invOutstanding')?.value||''),signatory:document.getElementById('invSignatory')?.value||'',taxMode:document.getElementById('invTaxMode').value,taxType:document.getElementById('invTaxType')?.value||'cgst_sgst',customTaxRate:num(document.getElementById('invCustomTax').value),customTaxLabel:sanitize(document.getElementById('invCustomTaxLabel')?.value||''),status:document.getElementById('invStatus').value,
     hsnSac:sanitize(document.getElementById('invHsnSac')?.value||'7314'),
     companyProfile:COMPANY_PROFILE,pdfUrl:''
   };
@@ -1393,7 +1450,7 @@ function refreshInvoiceTotals(){
     <div class="quote-total-row"><label>Products</label><span>${currency(inv.productTotal)}</span></div>
     <div class="quote-total-row"><label>Install + Delivery</label><span>${currency(inv.installation + inv.delivery)}</span></div>
     <div class="quote-total-row"><label>Discount</label><span>${currency(inv.discount)}</span></div>
-    <div class="quote-total-row"><label>Tax (${inv.taxRate}%)</label><span>${currency(inv.taxAmount)}</span></div>
+    <div class="quote-total-row"><label>${taxSummaryLabel(inv)}</label><span>${currency(inv.taxAmount)}</span></div>
     <div class="quote-total-row total"><label>Total</label><span>${currency(inv.total)}</span></div>
   `;
 }
@@ -1869,14 +1926,14 @@ async function buildQuotationPdf(q){
   if(addrLines[1]){lby+=4; doc.text(addrLines[1],vx,lby);}
   lby+=5; lbl('Contact :',qc.phone||q.phone||'',lx,vx,lby);
   lby+=4.5; lbl('E mail :',qc.email||'',lx,vx,lby);
-  lby+=4.5; lbl('Gst No. :',qc.gstNo||'',lx,vx,lby);
+  lby+=4.5; lbl('Gst No. :',qc.gstNo||q.gstNo||'',lx,vx,lby);
 
   // Right box
   const rx=lm+leftW+3, rlblW=28;
   let rby=y+5;
   const fmtQDate=q.quotationDate?(q.quotationDate.split('-').reverse().join('.')):'';  lbl('Date :',fmtQDate,rx,rx+rlblW,rby);
   rby+=5; lbl('Quote No.',q.quotationNumber||'',rx,rx+rlblW,rby);
-  rby+=5; lbl('Installation :',qc.installationTime||'Within 4 working days',rx,rx+rlblW,rby);
+  rby+=5; lbl('Installation :',qc.installationTime||q.installationTime||'Within 4 working days',rx,rx+rlblW,rby);
 
   y=y+boxH+1;
 
@@ -1920,7 +1977,7 @@ async function buildQuotationPdf(q){
     ['','Sub Total','','','',subtotalAmt.toFixed(2)],
     ...(discountAmt>0?[['','Discount (-)','','','','-'+discountAmt.toFixed(2)]]:[]),
     ['','Taxable Amount','','','',taxableAmt.toFixed(2)],
-    ['','IGST @ '+(q.taxRate||18)+'%','','','',taxAmt.toFixed(2)],
+    ...taxRowsForDocument(q,6),
     ['','R/O','','','',roundoff!==0?roundoff.toFixed(2):'']
   ];
   doc.autoTable({
@@ -1958,8 +2015,8 @@ async function buildQuotationPdf(q){
 
   // Advance / Outstanding + Stamp
   doc.setFontSize(8.5); doc.setFont('helvetica','bold');
-  doc.text('Advance : /-',lm,fy);
-  doc.text('Outstanding : /-',lm,fy+5);
+  doc.text('Advance : '+manualPaymentText(q.advanceAmount),lm,fy);
+  doc.text('Outstanding : '+manualPaymentText(q.outstandingAmount),lm,fy+5);
   // Company Signature & Stamp
   const sigName = q.signatory || COMPANY_PROFILE.name;
   
@@ -1994,9 +2051,8 @@ async function buildInvoicePdf(inv){
   const productTotal=num(inv.productTotal)||products.reduce((s,i)=>s+num(calculateItem(i).productTotal),0);
   const deliveryAmt=num(inv.delivery)+num(inv.installation);
   const subtotalAmt=num(inv.subtotal)||productTotal+deliveryAmt;
-  const taxRate=num(inv.taxRate)||18;
-  const taxAmt=num(inv.taxAmount)||num(inv.tax)||(subtotalAmt*taxRate/100);
-  const halfTax=taxAmt/2;
+  const taxRate=inv.taxRate!==undefined&&inv.taxRate!==null?num(inv.taxRate):18;
+  const taxAmt=inv.taxAmount!==undefined||inv.tax!==undefined?num(inv.taxAmount??inv.tax):(subtotalAmt*taxRate/100);
   const grandTotal=num(inv.total)||subtotalAmt+taxAmt;
   const roundoff=Math.round(grandTotal)-grandTotal;
   const totalQty=products.reduce((s,p)=>s+num(p.quantity),0);
@@ -2031,14 +2087,14 @@ async function buildInvoicePdf(inv){
   doc.text(addrLines[0]||'',vx,lby);
   if(addrLines[1]){lby+=4; doc.text(addrLines[1],vx,lby);}
   lby+=5; lbl('Contact :',ic.phone||inv.phone||'',lx,vx,lby);
-  lby+=4.5; lbl('Gst No. :',ic.gstNo||'',lx,vx,lby);
+  lby+=4.5; lbl('Gst No. :',ic.gstNo||inv.gstNo||'',lx,vx,lby);
 
   const rx=lm+leftW+3, rlblW=24;
   let rby=y+5;
   const fmtDate=inv.invoiceDate?(inv.invoiceDate.split('-').reverse().join('.')):'';  lbl('Date :',fmtDate,rx,rx+rlblW,rby);
   rby+=5;
   lbl('Invoice No.',inv.invoiceNumber||'',rx,rx+rlblW,rby);
-  rby+=5; doc.setFont('helvetica','bold'); doc.text('Ref.',rx,rby);
+  rby+=5; lbl('Installation :',ic.installationTime||inv.installationTime||'',rx,rx+rlblW,rby);
   rby+=5; doc.setFont('helvetica','bold'); doc.text('Delivery Add :',rx,rby);
   doc.setFont('helvetica','normal');
   const city=ic.city||ic.state||'';
@@ -2073,8 +2129,7 @@ async function buildInvoicePdf(inv){
     ['','Sub Total','','','','',currency2(subtotalAmt)],
     ...(discountAmtInv>0?[['','Discount (-)','','','','','-'+currency2(discountAmtInv)]]:[]),
     ['','Taxable Amount','','','','',currency2(taxableAmtInv)],
-    ['','CGST @ '+(taxRate/2)+'%','','','','',currency2(halfTax)],
-    ['','SGST @ '+(taxRate/2)+'%','','','','',currency2(halfTax)]
+    ...taxRowsForDocument(inv,7)
   ];
 
   const colStyles={
@@ -2145,6 +2200,11 @@ async function buildInvoicePdf(inv){
     doc.text(lines,lm+2,fy); fy+=lines.length*4;
   });
   fy+=4;
+
+  doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+  doc.text('Advance : '+manualPaymentText(inv.advanceAmount),lm,fy);
+  doc.text('Outstanding : '+manualPaymentText(inv.outstandingAmount),lm,fy+5);
+  fy+=7;
 
   // Company Signature & Stamp
   const invSigName = inv.signatory || COMPANY_PROFILE.name;
@@ -2227,7 +2287,7 @@ function buildWarrantyCardPdf(wc){
   }
   doc.setFontSize(9); doc.setFont('helvetica','italic');
   doc.setTextColor(150,150,150);
-  doc.text('"Supreme Insect Protection Systems"',pw/2+14,c1y+54,{align:'center'});
+  doc.text('"' + COMPANY_PROFILE.tagline + '"',pw/2+14,c1y+54,{align:'center'});
   doc.setTextColor(0,0,0);
 
   // Installed By + Stamp (hardcoded)
@@ -2276,9 +2336,9 @@ function buildWarrantyCardPdf(wc){
     try{ doc.addImage(logo.data,'PNG',pw/2-lw/2,logoY,lw,lh); }catch(e){}
   }
   doc.setFontSize(9.5); doc.setFont('helvetica','bold');
-  doc.text('NewTech Home Solutions',pw/2,logoY+19,{align:'center'});
+  doc.text(COMPANY_PROFILE.name,pw/2,logoY+19,{align:'center'});
   doc.setFontSize(7.5); doc.setFont('helvetica','italic');
-  doc.text('"Supreme Insect Protection Systems"',pw/2,logoY+24,{align:'center'});
+  doc.text('"' + COMPANY_PROFILE.tagline + '"',pw/2,logoY+24,{align:'center'});
   doc.setFont('helvetica','normal'); doc.setFontSize(7);
   const addrLine='Address : '+COMPANY_PROFILE.address;
   const addrSplit=doc.splitTextToSize(addrLine,pw-2*lm-8);
